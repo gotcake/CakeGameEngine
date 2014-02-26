@@ -1,0 +1,529 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game;
+
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.media.opengl.GL2;
+import org.cake.game.io.objectxml.ObjectXML;
+import org.cake.game.io.objectxml.ObjectXMLNode;
+import org.cake.game.io.objectxml.iObjectXMLParser;
+
+/**
+ * A color implementation.
+ * Color constants are ImmutableColor so their values cannot be changed.
+ * @author Aaron Cake
+ */
+public class Color implements iColor, Serializable {
+
+    static {
+        ObjectXML.registerParser(Color.class, new iObjectXMLParser<Color>() {
+            @Override
+            public Color parse(ObjectXMLNode node) {
+                float r = node.getAttrNumber("r").floatValue();
+                float g = node.getAttrNumber("g").floatValue();
+                float b = node.getAttrNumber("b").floatValue();
+                float a = node.getAttrNumber("a").floatValue();
+                return new Color(r, g, b, a);
+            }
+
+            @Override
+            public boolean produce(ObjectXMLNode node, Color c) {
+                node.setAttr("r", c.r);
+                node.setAttr("g", c.g);
+                node.setAttr("b", c.b);
+                node.setAttr("a", c.a);
+                return true;
+            }
+        });
+        ObjectXML.registerParser(ImmutableColor.class, new iObjectXMLParser<ImmutableColor>() {
+            @Override
+            public ImmutableColor parse(ObjectXMLNode node) {
+                float r = node.getAttrNumber("r").floatValue();
+                float g = node.getAttrNumber("g").floatValue();
+                float b = node.getAttrNumber("b").floatValue();
+                float a = node.getAttrNumber("a").floatValue();
+                return new ImmutableColor(r, g, b, a);
+            }
+
+            @Override
+            public boolean produce(ObjectXMLNode node, ImmutableColor c) {
+                node.setAttr("r", c.r);
+                node.setAttr("g", c.g);
+                node.setAttr("b", c.b);
+                node.setAttr("a", c.a);
+                return true;
+            }
+        });
+    }
+
+    public static void glClearColor(GL2 gl) {
+        gl.glColor3f(1, 1, 1);
+    }
+
+    private static float[] carr = new float[4];
+    private static Stack<float[]> colorStack = new Stack<>();
+
+    public static Color glGetCurrentColor(GL2 gl) {
+        gl.glGetFloatv(GL2.GL_CURRENT_COLOR, carr, 0);
+        return new Color(carr[0], carr[1], carr[2], carr[3]);
+    }
+
+    public static Color glGetCurrentColor(GL2 gl, Color target) {
+        gl.glGetFloatv(GL2.GL_CURRENT_COLOR, carr, 0);
+        return target.set(carr[0], carr[1], carr[2], carr[3]);
+    }
+
+    public static void glPushColor(GL2 gl) {
+        float[] arr = new float[4];
+        gl.glGetFloatv(GL2.GL_CURRENT_COLOR, arr, 0);
+        colorStack.push(arr);
+    }
+
+    public static void glPopColor(GL2 gl) {
+        if (!colorStack.isEmpty()) {
+            gl.glColor4fv(colorStack.pop(), 0);
+        }
+    }
+
+    /**
+     * The ImmutableColor black
+     */
+    public static final ImmutableColor black = new ImmutableColor(0, 0, 0, 1);
+    /**
+     * The ImmutableColor white
+     */
+    public static final ImmutableColor white = new ImmutableColor(1, 1, 1, 1);
+    /**
+     * The ImmutableColor red
+     */
+    public static final ImmutableColor red = new ImmutableColor(1, 0, 0, 1);
+    /**
+     * The ImmutableColor green
+     */
+    public static final ImmutableColor green = new ImmutableColor(0, 1, 0, 1);
+    /**
+     * The ImmutableColor blue
+     */
+    public static final ImmutableColor blue = new ImmutableColor(0, 0, 1, 1);
+    /**
+     * The ImmutableColor transparent white
+     */
+    public static final ImmutableColor transparentWhite = new ImmutableColor(1, 1, 1, 0);
+
+    /**
+     * The ImmutableColor transparent black
+     */
+    public static final ImmutableColor transparentBlack = new ImmutableColor(0, 0, 0, 0);
+    /**
+     * The ImmutableColor yellow
+     */
+    public static final ImmutableColor yellow = new ImmutableColor(1, 1, 0, 1);
+    /**
+     * The ImmutableColor yellow
+     */
+    public static final ImmutableColor magenta = new ImmutableColor(1, 0, 1, 1);
+    /**
+     * The ImmutableColor yellow
+     */
+    public static final ImmutableColor cyan = new ImmutableColor(0, 1, 1, 1);
+    /**
+     * The ImmutableColor gray
+     */
+    public static final ImmutableColor gray = new ImmutableColor(0.5f, 0.5f, 0.5f, 1);
+    /**
+     * The ImmutableColor light gray
+     */
+    public static final ImmutableColor lightgray = new ImmutableColor(0.75f, 0.75f, 0.75f, 1);
+    /**
+     * The ImmutableColor dark gray
+     */
+    public static final ImmutableColor darkgray = new ImmutableColor(0.25f, 0.25f, 0.25f, 1);
+    /**
+     * The ImmutableColor orange
+     */
+    public static final ImmutableColor orange = new ImmutableColor(1, 0.5f, 0, 1);
+
+    private static final Map<iColor, String> colorNames;
+
+    static {
+        colorNames = new HashMap<>();
+        for (Field f: Color.class.getFields()) {
+            if (f.getType() == ImmutableColor.class && Modifier.isStatic(f.getModifiers()))
+                try {
+                colorNames.put((iColor)f.get(null), f.getName());
+                } catch (Exception ex) { }
+        }
+
+    }
+
+    public float r, g, b, a;
+
+    /**
+     * Create a color with the given RGBA values ranging from 0.0 to 1.0.
+     * @param r the red component
+     * @param g the green component
+     * @param b the blue component
+     * @param a the alpha component (opaqueness)
+     */
+    public Color(float r, float g, float b, float a) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = a;
+    }
+
+    /**
+     * Create a opaque color with the given RGB values ranging from 0.0 to 1.0.
+     * @param r the red component
+     * @param g the green component
+     * @param b the blue component
+     */
+    public Color(float r, float g, float b) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = 1;
+    }
+
+    /**
+     * Make a copy of a color
+     * @param other another color
+     */
+    public Color(iColor other) {
+        this.r = other.getRed();
+        this.g = other.getGreen();
+        this.b = other.getBlue();
+        this.a = other.getAlpha();
+    }
+
+    @Override
+    public void glBindColor(GL2 gl) {
+        gl.glColor4f(r, g, b, a);
+    }
+
+    @Override
+    public float getAlpha() {
+        return a;
+    }
+
+    @Override
+    public float getRed() {
+        return r;
+    }
+
+    @Override
+    public float getGreen() {
+        return g;
+    }
+
+    @Override
+    public float getBlue() {
+        return b;
+    }
+
+    @Override
+    public Color blend(iColor other) {
+        return new Color((r + other.getRed()) / 2,
+                    (g + other.getGreen()) / 2,
+                    (b + other.getBlue()) / 2,
+                    (a + other.getAlpha()) / 2
+                    );
+    }
+
+    @Override
+    public Color interpolate(iColor other, float t) {
+        return new Color(r * (1 - t) + other.getRed() * t,
+                    g * (1 - t) + other.getGreen() * t,
+                    b * (1 - t) + other.getBlue() * t,
+                    a * (1 - t) + other.getAlpha() * t
+                    );
+    }
+
+    @Override
+    public Color multiply(iColor other) {
+        return new Color(r * other.getRed(),
+                    g * other.getGreen(),
+                    b * other.getBlue(),
+                    a *  other.getAlpha()
+                    );
+    }
+
+    @Override
+    public void glBindColorOpaque(GL2 gl) {
+        gl.glColor3f(r, g, b);
+    }
+
+    @Override
+    public Color opaque() {
+        return new Color(r, g, b, 1);
+    }
+
+    @Override
+    public Color copy() {
+        return new Color(r, g, b, a);
+    }
+
+
+
+    public ImmutableColor immutableCopy() {
+        return new ImmutableColor(r, g, b, a);
+    }
+
+
+    /**
+     * Set the RGBA components of this Color.
+     * @param r the red component
+     * @param g the green component
+     * @param b the blue component
+     * @param a the alpha component (opaqueness)
+     * @return this Color
+     */
+    public Color set(float r, float g, float b, float a) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = a;
+        return this;
+    }
+
+    /**
+     * Set the RGB components of this Color, and the alpha to 1.
+     * @param r the red component
+     * @param g the green component
+     * @param b the blue component
+     * @return this Color
+     */
+    public Color set(float r, float g, float b) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = 1;
+        return this;
+    }
+
+    /**
+     * Blends this color with another color and stores the result in this Color.
+     * @param other another color
+     * @return this Color, after being blended
+     */
+    public Color blendLocal(iColor other) {
+        this.r = (r + other.getRed()) / 2;
+        this.g = (g + other.getGreen()) / 2;
+        this.b = (b + other.getBlue()) / 2;
+        this.a = (a + other.getAlpha()) / 2;
+        return this;
+    }
+
+    /**
+     * Interpolates this color with another color by the amount t and stores the result in this Color.
+     * @param other another color
+     * @param t the amount to interpolate (0.0 to 1.0)
+     * @return this Color, after being interpolated
+     */
+    public Color interpolateLocal(iColor other, float t) {
+        this.r = r * (1 - t) + other.getRed() * t;
+        this.g = g * (1 - t) + other.getGreen() * t;
+        this.b = b * (1 - t) + other.getBlue() * t;
+        this.a = a * (1 - t) + other.getAlpha() * t;
+        return this;
+    }
+
+    /**
+     * Multiplies this color with another color and stores the result in this Color.
+     * @param other another color
+     * @return this Color, after being multiplied.
+     */
+    public Color multiplyLocal(iColor other) {
+        this.r *= other.getRed();
+        this.g *= other.getGreen();
+        this.b *= other.getBlue();
+        this.a *= other.getAlpha();
+        return this;
+    }
+
+    /**
+     * Sets the alpha value of this Color to 1.
+     * @return this Color
+     */
+    public Color opaqueLocal() {
+        this.a = 1;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "Color[" + r + "," + g + "," + b + "," + a + "]";
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null || !(other instanceof iColor))
+            return false;
+        iColor c = (iColor)other;
+        return r == c.getRed() && g == c.getGreen() && b == c.getBlue() && a == c.getAlpha();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 23 * hash + Float.floatToIntBits(this.r);
+        hash = 23 * hash + Float.floatToIntBits(this.g);
+        hash = 23 * hash + Float.floatToIntBits(this.b);
+        hash = 23 * hash + Float.floatToIntBits(this.a);
+        return hash;
+    }
+
+    @Override
+    public String colorString() {
+        String name = colorNames.get(this);
+        if (name == null)
+            return "[" + r + "," + g + "," + b + "," + a + "]";
+        return name;
+    }
+
+    @Override
+    public Color transparent() {
+        return new Color(r, g, b, 0);
+    }
+
+    public Color transparentLocal() {
+        a = 0;
+        return this;
+    }
+
+    /**
+     * A immutable implementation of iColor
+     */
+    public static class ImmutableColor implements iColor, Serializable {
+
+        private float r, g, b, a;
+
+        public ImmutableColor(float r, float g, float b, float a) {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.a = a;
+        }
+
+        public ImmutableColor(iColor other) {
+            this.r = other.getRed();
+            this.g = other.getGreen();
+            this.b = other.getBlue();
+            this.a = other.getAlpha();
+        }
+
+        @Override
+        public void glBindColor(GL2 gl) {
+            gl.glColor4f(r, g, b, a);
+        }
+
+        @Override
+        public float getAlpha() {
+            return a;
+        }
+
+        @Override
+        public float getRed() {
+            return r;
+        }
+
+        @Override
+        public float getGreen() {
+            return g;
+        }
+
+        @Override
+        public float getBlue() {
+            return b;
+        }
+
+        @Override
+        public Color blend(iColor other) {
+            return new Color((r + other.getRed()) / 2,
+                    (g + other.getGreen()) / 2,
+                    (b + other.getBlue()) / 2,
+                    (a + other.getAlpha()) / 2
+                    );
+        }
+
+        @Override
+        public Color interpolate(iColor other, float t) {
+            return new Color(r * (1 - t) + other.getRed() * t,
+                    g * (1 - t) + other.getGreen() * t,
+                    b * (1 - t) + other.getBlue() * t,
+                    a * (1 - t) + other.getAlpha() * t
+                    );
+        }
+
+        @Override
+        public Color multiply(iColor other) {
+            return new Color(r * other.getRed(),
+                    g * other.getGreen(),
+                    b * other.getBlue(),
+                    a *  other.getAlpha()
+                    );
+        }
+
+        @Override
+        public void glBindColorOpaque(GL2 gl) {
+            gl.glColor3f(r, g, b);
+        }
+
+        @Override
+        public Color opaque() {
+            return new Color(r, g, b, 1);
+        }
+
+        @Override
+        public Color copy() {
+            return new Color(r, g, b, a);
+        }
+
+        @Override
+        public String toString() {
+            return "ImmutableColor[" + r + "," + g + "," + b + "," + a + "]";
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == null || !(other instanceof iColor))
+                return false;
+            iColor c = (iColor)other;
+            return r == c.getRed() && g == c.getGreen() && b == c.getBlue() && a == c.getAlpha();
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 23 * hash + Float.floatToIntBits(this.r);
+            hash = 23 * hash + Float.floatToIntBits(this.g);
+            hash = 23 * hash + Float.floatToIntBits(this.b);
+            hash = 23 * hash + Float.floatToIntBits(this.a);
+            return hash;
+        }
+
+        @Override
+        public String colorString() {
+            String name = colorNames.get(this);
+            if (name == null)
+                return "[" + r + "," + g + "," + b + "," + a + "]";
+            return name;
+        }
+
+        @Override
+        public Color transparent() {
+            return new Color(r, g, b, 0);
+        }
+
+    }
+
+}

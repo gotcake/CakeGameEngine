@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/io
+END
+ResourceManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/io/ResourceManager.java
+END
+iResourceLocator.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/2/trunk/CakeGame/src/org/cake/game/io/iResourceLocator.java
+END
+INIDataProvider.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/io/INIDataProvider.java
+END
+PropertiesDataProvider.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/io/PropertiesDataProvider.java
+END
+FileSystemResourceLocator.java
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/2/trunk/CakeGame/src/org/cake/game/io/FileSystemResourceLocator.java
+END
+ClassLoaderResourceLocator.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/7/trunk/CakeGame/src/org/cake/game/io/ClassLoaderResourceLocator.java
+END
+URLResourceLocator.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/!svn/ver/2/trunk/CakeGame/src/org/cake/game/io/URLResourceLocator.java
+END
+iResource.java
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/2/trunk/CakeGame/src/org/cake/game/io/iResource.java
+END
+iDataProvider.java
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/io/iDataProvider.java
+END
+Settings.java
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/io/Settings.java
+END

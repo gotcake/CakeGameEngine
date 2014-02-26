@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><objxml>
+   <list _refID="1" class="java.util.LinkedList">
+      <string value="Hello World"/>
+      <number value="4.0f"/>
+      <number value="10.5d"/>
+      <list class="[I">
+         <number value="1i"/>
+         <number value="2i"/>
+         <number value="3i"/>
+      </list>
+      <reference targetID="1"/>
+   </list>
+</objxml>

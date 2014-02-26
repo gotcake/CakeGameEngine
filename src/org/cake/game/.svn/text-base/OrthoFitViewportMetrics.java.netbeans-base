@@ -1,0 +1,121 @@
+/*
+    This file is part of CakeGame engine.
+
+    CakeGame engine is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    CakeGame engine is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with CakeGame engine.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.cake.game;
+
+import javax.media.opengl.GL2;
+import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.glu.GLU;
+import org.cake.game.geom.Transform2;
+import org.cake.game.geom.Vector2;
+
+/**
+ * A ViewPortMetrics for a fixed size orthographic projection fit within the window.
+ * @author Aaron Cake
+ */
+public class OrthoFitViewportMetrics implements iViewportMetrics {
+    
+    private float width, height;
+    private int curw, curh;
+    private float offx, offy, aw, ah;
+    private boolean needsLaidOut;
+    private Transform2 transform, transforminvert;
+    
+    public OrthoFitViewportMetrics(float width, float height) {
+        this.width = (width > 0 ? width : 1);
+        this.height = (height > 0 ? height : 1);
+        this.needsLaidOut = false;
+        transform = new Transform2();
+        transforminvert = new Transform2();
+    }
+
+    @Override
+    public void apply(Game game, GLAutoDrawable drawable, int width, int height) {
+        curw = (width > 0 ? width : 1);
+        curh = (height > 0 ? height : 1);
+        layout(drawable);
+    }
+    
+    private void layout(GLAutoDrawable drawable) {
+        needsLaidOut = false;
+        float windowar = (float)curw / curh;
+        float gamear = (float)width / height;
+        aw = curw;
+        ah = curh;
+        offx = offy = 0;
+        if (windowar > gamear) {
+            aw = curh * gamear;
+            offx = (curw - aw) / 2; 
+        } else if (windowar < gamear) {
+            ah = curw / gamear;
+            offy = (curh - ah) / 2;
+        }
+        
+        GL2 gl = drawable.getGL().getGL2();
+        GLU glu = new GLU();
+        gl.glViewport((int)offx, (int)offy, (int)aw, (int)ah);
+        gl.glMatrixMode(GL2.GL_PROJECTION);
+        gl.glLoadIdentity();
+        glu.gluOrtho2D(0, this.width, this.height, 0);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        gl.glLoadIdentity();
+        
+        transform = new Transform2();
+        transform.scaleLocal(width / aw, height / ah);
+        transform.translateLocal(-offx, -offy);
+        transforminvert = transform.inverse();
+    }
+    
+    public void setSize(float w, float h) {
+        w = (w > 0 ? w : 1);
+        h = (h > 0 ? h : 1);
+        if (w != width || h != height)
+            needsLaidOut = true;
+        width = w;
+        height = h;
+    }
+    
+    public float getWidth() {
+        return width;
+    }
+    
+    public float getHeight() {
+        return height;
+    }
+
+    public boolean isDirty() {
+        return needsLaidOut;
+    }
+
+    @Override
+    public Vector2 transformPoint(Vector2 p) {
+        return transform.transform(p);
+    }
+
+    @Override
+    public Vector2 inverseTransformPoint(Vector2 p) {
+        return transforminvert.transform(p);
+    }
+
+    @Override
+    public Vector2 clipPoint(Vector2 p) {
+        p.x = (p.x < 0 ? 0 : (p.x > width ? width : p.x));
+        p.y = (p.y < 0 ? 0 : (p.y > height ? height : p.y));
+        return p;
+    }
+    
+}

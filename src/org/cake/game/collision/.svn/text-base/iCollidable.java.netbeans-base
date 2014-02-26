@@ -1,0 +1,38 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.collision;
+
+import org.cake.game.geom.SimpleTransform2;
+import org.cake.game.geom.Vector2;
+import org.cake.game.geom.iShape;
+import org.cake.game.geom.iTransform2;
+
+/**
+ *
+ * @author Aaron Cake
+ */
+public interface iCollidable {
+
+    public aCollisionFilter getFilter();
+
+    public iTransform2 getTransform();
+
+    public AABB getAABB();
+
+    public Vector2 getCenter();
+
+    public float getRadiusSquared();
+
+    public iShape getShape();
+
+    public void transform(SimpleTransform2 transform);
+
+    public void translate(Vector2 vector);
+
+    public void rotate(float theta);
+
+    public int getID();
+
+}

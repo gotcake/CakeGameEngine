@@ -1,0 +1,29 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.text;
+
+import org.cake.game.collision.AABB;
+
+/**
+ * A generic interface for fonts.
+ * @author Aaron Cake
+ */
+public interface iFont {
+    
+    public void drawString(String str, float x, float y);
+    
+    public void drawChar(char c, float x, float y);
+    
+    public float getLineHeight();
+    
+    public float getAscent();
+    
+    public float getDecent();
+    
+    public AABB getBounds(String str);
+    
+    public AABB getBounds(char c);
+    
+}

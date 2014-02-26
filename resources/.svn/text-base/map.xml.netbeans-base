@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objxml>
+   <map>
+      <entry>
+         <char name="key" value="c"/>
+         <string name="value" value="pfft"/>
+      </entry>
+      <entry>
+         <string name="key" value="Lmao"/>
+         <number name="value" value="1.0f"/>
+      </entry>
+      <entry>
+         <number name="key" value="12i"/>
+         <string name="value" value="Lolz"/>
+      </entry>
+   </map>
+</objxml>

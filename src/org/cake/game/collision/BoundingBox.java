@@ -1,0 +1,234 @@
+/*
+    This file is part of CakeGame engine.
+
+    CakeGame engine is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    CakeGame engine is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with CakeGame engine.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.cake.game.collision;
+
+import java.util.List;
+import org.cake.game.geom.Vector2;
+import org.cake.game.geom.iTransform2;
+
+/**
+ * An axis-aligned bounding box used for broad-phase collision / point detection
+ * @author Aaron Cake
+ */
+public class BoundingBox implements iBoundingBox {
+
+    public float left, top, right, bottom;
+
+    public BoundingBox() {
+        set(Float.MAX_VALUE, Float.MAX_VALUE, Float.MIN_VALUE, Float.MIN_VALUE);
+    }
+
+    public BoundingBox(float left, float top, float right, float bottom) {
+        set(left, top, right, bottom);
+    }
+
+    public BoundingBox(List<Vector2> points) {
+        set(points);
+    }
+
+    public BoundingBox(List<Vector2> points, iTransform2 trans) {
+        set(points);
+    }
+
+    public void set(float left, float top, float right, float bottom) {
+        this.left = left;
+        this.top = top;
+        this.right = right;
+        this.bottom = bottom;
+    }
+
+    public void set(List<Vector2> points) {
+        if (points.isEmpty()) {
+            top = left = bottom = right = 0;
+        } else {
+            Vector2 p = points.get(0);
+            left = right = p.x;
+            top = bottom = p.y;
+            for (int i=1; i<points.size(); i++) {
+                p = points.get(i);
+                if (p.x < left)
+                    left = p.x;
+                else if (p.x > right)
+                    right = p.x;
+                if (p.y < top)
+                    top = p.y;
+                else if (p.y > bottom)
+                    bottom = p.y;
+            }
+        }
+    }
+
+    public void set(List<Vector2> points, iTransform2 trans) {
+        if (points.isEmpty()) {
+            top = left = bottom = right = 0;
+        } else {
+            Vector2 p = new Vector2();
+            trans.transform(points.get(0), p);
+            left = right = p.x;
+            top = bottom = p.y;
+            for (int i=1; i<points.size(); i++) {
+                trans.transform(points.get(i), p);
+                if (p.x < left)
+                    left = p.x;
+                else if (p.x > right)
+                    right = p.x;
+                if (p.y < top)
+                    top = p.y;
+                else if (p.y > bottom)
+                    bottom = p.y;
+            }
+        }
+    }
+
+    public void addPoint(Vector2 point) {
+        addPoint(point.x, point.y);
+    }
+
+    public void addPoint(float x, float y) {
+        if (x < left)
+            left = x;
+        if (x > right)
+            right = x;
+        if (y < top)
+            top = y;
+        if (y > bottom)
+            bottom = y;
+    }
+
+    public boolean contains(BoundingBox other) {
+        return other.top >= top && other.bottom <= bottom && other.left >= left && other.right <= right;
+    }
+
+    public boolean contains(Vector2 point) {
+        return point.y >= top && point.y <= bottom && point.x >= left && point.x <= right;
+    }
+
+    public BoundingBox combine(BoundingBox other) {
+        return new BoundingBox(min(left, other.left), min(top, other.top), max(right, other.right), max(bottom, other.bottom));
+    }
+
+    public void add(BoundingBox other) {
+        if (other.left < left)
+            left = other.left;
+        if (other.right > right)
+            right = other.right;
+        if (other.top < top)
+            top = other.top;
+        if (other.bottom > bottom)
+            bottom = other.bottom;
+    }
+
+    public void add(iBoundingBox other) {
+        if (other.getMinX() < left)
+            left = other.getMinX();
+        if (other.getMinX() > right)
+            right = other.getMinX();
+        if (other.getMinX() < top)
+            top = other.getMinX();
+        if (other.getMinX() > bottom)
+            bottom = other.getMinX();
+    }
+
+    public boolean intersects(BoundingBox other) {
+        if (other.top >= top) { // top of other rectangle is below the top of this one
+            if (other.top <= bottom) { // top of other rectangle is in range
+                if (other.left >= left) { // left of other rectangle is to the right of the left of this one
+                    if (other.left <= right) { // the left of the other rectangle is in range
+                        return true;
+                    } else { // the other rectangle is to the right of this rectangle
+                        return false;
+                    }
+                } else if (other.right >= left) { // the right of the other rectangle is to the right of the left of this one
+                    return true;
+                } else { // the other rectangle is to the left of this one
+                    return false;
+                }
+            } else { // rectangle is below this one
+                return false;
+            }
+        } else if (other.bottom >= top) { // the bottom of the other rectangle is below the top of this one
+            if (other.bottom <= bottom) { // the bottom of the other rectangle is in range
+                if (other.left >= left) { // left of other rectangle is to the right of the left of this one
+                    if (other.left <= right) { // the left of the other rectangle is in range
+                        return true;
+                    } else { // the other rectangle is to the right of this rectangle
+                        return false;
+                    }
+                } else if (other.right >= left) { // the right of the other rectangle is to the right of the left of this one
+                    return true;
+                } else { // the other rectangle is to the left of this one
+                    return false;
+                }
+            } else { // this rectangle is completely in range of the other rectangle
+                if (left >= other.left) { // left of this rectangle is to the right of the left of the other one
+                    if (left <= other.right) { // the left of the this rectangle is in range
+                        return true;
+                    } else { // this rectangle is to the right of the other rectangle
+                        return false;
+                    }
+                } else if (right >= other.left) { // the right of this rectangle is to the right of the left of the other one
+                    return true;
+                } else { // this rectangle is to the left of the other one
+                    return false;
+                }
+            }
+        } else { // rectangle is above this one
+            return false;
+        }
+    }
+
+    public BoundingBox copy() {
+        return new BoundingBox(left, top, right, bottom);
+    }
+
+    private static float min(float a, float b) {
+        if (a < b)
+            return a;
+        return b;
+    }
+
+    private static float max(float a, float b) {
+        if (a > b)
+            return a;
+        return b;
+    }
+
+    @Override
+    public float getMinY() {
+        return top;
+    }
+
+    @Override
+    public float getMinX() {
+        return left;
+    }
+
+    @Override
+    public float getMaxY() {
+        return bottom;
+    }
+
+    @Override
+    public float getMaxX() {
+        return right;
+    }
+    
+    public String toString() {
+        return String.format("AABB[top=%f, left=%f, bottom=%f, right=%f]", top, left, bottom, right);
+    }
+}

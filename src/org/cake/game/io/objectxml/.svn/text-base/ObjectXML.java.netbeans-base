@@ -1,0 +1,544 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.io.objectxml;
+
+import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import org.cake.game.io.ResourceManager;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+
+/**
+ *
+ * @author Aaron Cake
+ */
+public class ObjectXML implements Iterable<ObjectXMLNode>  {
+
+    private static DocumentBuilder docBuilder;
+    private static Transformer transformer;
+
+    static {
+        try {
+            docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "3");
+        } catch (ParserConfigurationException | TransformerConfigurationException ex) {}
+
+    }
+
+    protected static Map<Class, iObjectXMLParser> parsers = new HashMap<>();
+
+    public static <T> void registerParser(Class<T> clazz, iObjectXMLParser<T> parser) {
+        parsers.put(clazz, parser);
+    }
+
+    public static String serialize(Object obj) {
+        ObjectXML xml = new ObjectXML();
+        xml.addChild(obj);
+        return xml.getXML();
+    }
+
+    public static Object unserialize(String src) {
+        ObjectXML xml = new ObjectXML(src);
+        return xml.firstChild().getAsObject();
+    }
+
+    public static void serializeToFile(Object obj, String ref) {
+        ObjectXML xml = new ObjectXML();
+        xml.addChild(obj);
+        xml.save(ref);
+    }
+
+    public static Object unserializeFromFile(String ref) {
+        ObjectXML xml = open(ref);
+        return xml.firstChild().getAsObject();
+    }
+
+    public static ObjectXML open(String ref) {
+        return new ObjectXML(ResourceManager.getDefault().getResource(ref).openRead());
+    }
+
+    private static Set<String> validTagNames = new HashSet(Arrays.asList(
+            "number", "string", "char", "list", "object", "map", "entry", "boolean"
+            ));
+
+    protected Document doc;
+    protected Element element;
+
+    protected ObjectXML(Element ele) {
+        if (!validTagNames.contains(ele.getNodeName()))
+            throw ObjectXMLException.invalidType(ele);
+        this.element = ele;
+        this.doc = ele.getOwnerDocument();
+    }
+
+    public ObjectXML() {
+        doc = docBuilder.newDocument();
+        element = doc.createElement("objxml");
+        doc.appendChild(element);
+    }
+
+    public ObjectXML(String source) {
+        try {
+            doc = docBuilder.newDocument();
+            docBuilder.parse(new InputSource(new StringReader(source)));
+            element = doc.createElement("objxml");
+            doc.appendChild(element);
+        } catch (SAXException|IOException ex) {
+            throw new ObjectXMLException(ex);
+        }
+    }
+
+    public ObjectXML(InputStream is) {
+        try {
+            doc = docBuilder.parse(is);
+            element = doc.getDocumentElement();
+        } catch (SAXException | IOException ex) {
+            throw new ObjectXMLException(ex);
+        }
+    }
+
+    public ObjectXMLNode getNamedChild(String name) {
+        NodeList nl = element.getChildNodes();
+        for (int i=0; i<nl.getLength(); i++) {
+            Node n = nl.item(i);
+            if (n instanceof Element) {
+                Element e = (Element)n;
+                if (e.hasAttribute("name") && e.getAttribute("name").equals(name))
+                    return new ObjectXMLNode(e);
+            }
+        }
+        return null;
+    }
+
+    public ObjectXMLNode getIndexedChild(int index) {
+        NodeList nl = element.getChildNodes();
+        for (int i=0; i<nl.getLength(); i++) {
+            Node n = nl.item(i);
+            if (n instanceof Element) {
+                Element e = (Element)n;
+                if (e.hasAttribute("index") && e.getAttribute("index").equals(String.valueOf(index)))
+                    return new ObjectXMLNode(e);
+            }
+        }
+        return null;
+    }
+
+    public ObjectXMLNode firstChild() {
+        NodeList nl = element.getChildNodes();
+        for (int i=0; i<nl.getLength(); i++) {
+            Node n = nl.item(i);
+            if (n instanceof Element) {
+                Element e = (Element)n;
+                return new ObjectXMLNode(e);
+            }
+        }
+        return null;
+    }
+
+    protected static String serialize64(Serializable o) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos;
+        try {
+            oos = new ObjectOutputStream(baos);
+            oos.writeObject(o);
+            oos.close();
+        } catch (IOException ex) {
+            throw new ObjectXMLException(ex);
+        }
+        return new String( Base64Coder.encode( baos.toByteArray() ) );
+    }
+
+    protected static Object unserialize64(String s) {
+        ObjectInputStream ois = null;
+        try {
+            byte [] data = Base64Coder.decode(s);
+            ois = new ObjectInputStream(new ByteArrayInputStream(data));
+            Object o = ois.readObject();
+            ois.close();
+            return o;
+        } catch (IOException | ClassNotFoundException ex) {
+            throw new ObjectXMLException(ex);
+        } finally {
+            try {
+                ois.close();
+            } catch (IOException ex) {}
+        }
+    }
+
+    protected Element makeElement(Object obj, boolean forceSerialization) {
+        if (obj instanceof Number)
+            return makeElement((Number)obj);
+        if (obj instanceof String)
+            return makeElement((String)obj);
+        if (obj instanceof Character)
+            return makeElement((Character)obj);
+        if (obj instanceof Boolean)
+            return makeElement((Boolean)obj);
+        if (!forceSerialization) {
+            if (obj instanceof Collection)
+                return makeElement((Collection)obj);
+            if (obj.getClass().isArray())
+                return makeElement(Arrays.asList(obj));
+            if (obj instanceof Map)
+                return makeElement((Map)obj);
+            if (obj instanceof Entry)
+                return makeElement((Entry)obj);
+            if (obj instanceof Map.Entry)
+                return makeElement((Map.Entry)obj);
+            iObjectXMLParser parser = parsers.get(obj.getClass());
+            Element ele = doc.createElement("object");
+            ele.setAttribute("class", obj.getClass().getName());
+            if (parser == null) {
+                if (obj instanceof Serializable) {
+                    ele.setAttribute("serialized", serialize64((Serializable)obj));
+                } else {
+                    throw new ObjectXMLException("No ObjectXMLParser defined for unserializable class '" + obj.getClass().getCanonicalName() + "'.");
+                }
+            } else {
+                parser.produce(new ObjectXMLNode(ele), obj);
+            }
+            return ele;
+        } else {
+            if (obj instanceof Serializable) {
+                Element ele = doc.createElement("object");
+                ele.setAttribute("class", obj.getClass().getName());
+                ele.setAttribute("serialized", serialize64((Serializable)obj));
+                return ele;
+            } else {
+                throw new ObjectXMLException("Attempt for force serialization on unserializable class '" + obj.getClass().getCanonicalName() + "'.");
+            }
+        }
+    }
+
+    protected Element makeElement(Map m) {
+        Element ele = doc.createElement("map");
+        for (Object key: m.keySet()) {
+            Element e = doc.createElement("entry");
+            Element keyElement = makeElement(key, false);
+            keyElement.setAttribute("name", "key");
+            Object val = m.get(key);
+            Element valElement = makeElement(val, false);
+            valElement.setAttribute("name", "value");
+            e.appendChild(keyElement);
+            e.appendChild(valElement);
+            ele.appendChild(e);
+        }
+        return ele;
+    }
+
+    protected Element makeElement(Entry e) {
+        Element ele = doc.createElement("entry");
+        Element keyElement = makeElement(e.getKey(), false);
+        keyElement.setAttribute("name", "key");
+        Element valElement = makeElement(e.getValue(), false);
+        valElement.setAttribute("name", "value");
+        ele.appendChild(keyElement);
+        ele.appendChild(valElement);
+        return ele;
+    }
+
+    protected Element makeElement(Map.Entry entry) {
+        Element ele = doc.createElement("entry");
+        Element keyElement = makeElement(entry.getKey(), false);
+        keyElement.setAttribute("name", "key");
+        Element valElement = makeElement(entry.getValue(), false);
+        valElement.setAttribute("name", "value");
+        ele.appendChild(keyElement);
+        ele.appendChild(valElement);
+        return ele;
+    }
+
+    protected Element makeElement(String s) {
+        Element ele = doc.createElement("string");
+        ele.setAttribute("value", s);
+        return ele;
+    }
+
+    protected Element makeElement(Character c) {
+        Element ele = doc.createElement("char");
+        ele.setAttribute("value", String.valueOf(c));
+        return ele;
+    }
+
+    protected Element makeElement(Boolean b) {
+        Element ele = doc.createElement("boolean");
+        ele.setAttribute("value", String.valueOf(b));
+        return ele;
+    }
+
+    protected Element makeElement(Collection c) {
+        Element ele = doc.createElement("list");
+        for (Object o: c) {
+            ele.appendChild(makeElement(o, false));
+        }
+        return ele;
+    }
+
+    protected static Number parseNumber(String str) {
+        if (str.length() < 2)
+            throw new ObjectXMLException("invalid number format, must be a number followed by a valid type indicator.");
+        char last = str.charAt(str.length() - 1);
+        String left = str.substring(0, str.length() - 1);
+        try {
+            switch (last) {
+                case 'i':
+                    return Integer.parseInt(left);
+                case 'l':
+                    return Long.parseLong(left);
+                case 's':
+                    return Short.parseShort(left);
+                case 'b':
+                    return Byte.parseByte(left);
+                case 'f':
+                    return Float.parseFloat(left);
+                case 'd':
+                    return Double.parseDouble(left);
+                case 'I':
+                    return new BigInteger(left);
+                case 'D':
+                    return new BigDecimal(left);
+                case 'A':
+                    return new AtomicLong(Long.parseLong(left));
+                case 'a':
+                    return new AtomicInteger(Integer.parseInt(left));
+            }
+        } catch (Exception ex) { }
+        throw new ObjectXMLException("invalid number format, must be a number followed by a valid type indicator.");
+    }
+    protected static String formatNumber(Number n) {
+        if (n instanceof Double) {
+            return n.toString() + "d";
+        } else if (n instanceof Float) {
+            return n.toString() + "f";
+        } else if (n instanceof Integer) {
+            return n.toString() + "i";
+        } else if (n instanceof Long) {
+            return n.toString() + "l";
+        } else if (n instanceof Short) {
+            return n.toString() + "s";
+        } else if (n instanceof Byte) {
+            return n.toString() + "b";
+        } else if (n instanceof BigInteger) {
+            return n.toString() + "I";
+        } else if (n instanceof BigDecimal) {
+            return n.toString() + "D";
+        } else if (n instanceof AtomicInteger) {
+            return n.toString() + "a";
+        } else if (n instanceof AtomicLong) {
+            return n.toString() + "A";
+        } else {
+            throw new ObjectXMLException("Unsupported number type: " + n.getClass().getCanonicalName());
+        }
+    }
+
+    protected static boolean parseBoolean(String str) {
+        try {
+            return Boolean.parseBoolean(str);
+        } catch (Exception e) {
+            throw new ObjectXMLException("invalid boolean format.");
+        }
+    }
+
+    protected Element makeElement(Number n) {
+        Element ele = doc.createElement("number");
+        ele.setAttribute("value", formatNumber(n));
+        return ele;
+    }
+
+    public void addChild(Object obj) {
+        element.appendChild(makeElement(obj, false));
+    }
+
+    public void addChild(Object obj, String name) {
+        Element e = makeElement(obj, false);
+        e.setAttribute("name", name);
+        element.appendChild(e);
+    }
+
+    public void addChild(Object obj, int index) {
+        Element e = makeElement(obj, false);
+        e.setAttribute("index", String.valueOf(index));
+        element.appendChild(e);
+    }
+
+    public void addChild(Object obj, boolean forceSerialization) {
+        element.appendChild(makeElement(obj, forceSerialization));
+    }
+
+    public void addChild(Object obj, String name, boolean forceSerialization) {
+        Element e = makeElement(obj, forceSerialization);
+        e.setAttribute("name", name);
+        element.appendChild(e);
+    }
+
+    public void addChild(Object obj, int index, boolean forceSerialization) {
+        Element e = makeElement(obj, forceSerialization);
+        e.setAttribute("index", String.valueOf(index));
+        element.appendChild(e);
+    }
+
+    public ObjectXMLNode addMap() {
+        Element e = doc.createElement("map");
+        element.appendChild(e);
+        return new ObjectXMLNode(e);
+    }
+
+    public ObjectXMLNode addMap(String name) {
+        Element e = doc.createElement("map");
+        e.setAttribute("name", name);
+        element.appendChild(e);
+        return new ObjectXMLNode(e);
+    }
+
+    public ObjectXMLNode addChildMap(int index) {
+        Element e = doc.createElement("map");
+        e.setAttribute("index", String.valueOf(index));
+        element.appendChild(e);
+        return new ObjectXMLNode(e);
+    }
+
+    public ObjectXMLNode addChildEntry(Object key, Object value) {
+        Element e = makeElement(new Entry(key, value));
+        element.appendChild(e);
+        return new ObjectXMLNode(e);
+    }
+
+    public ObjectXMLNode addChildEntry(Object key, Object value, String name) {
+        Element e = makeElement(new Entry(key, value));
+        e.setAttribute("name", name);
+        element.appendChild(e);
+        return new ObjectXMLNode(e);
+    }
+
+    public ObjectXMLNode addChildEntry(Object key, Object value, int index) {
+        Element e = makeElement(new Entry(key, value));
+        e.setAttribute("index", String.valueOf(index));
+        element.appendChild(e);
+        return new ObjectXMLNode(e);
+    }
+
+    public ObjectXMLNode addChildList() {
+        Element e = doc.createElement("list");
+        element.appendChild(e);
+        return new ObjectXMLNode(e);
+    }
+
+    public ObjectXMLNode addChildList(String name) {
+        Element e = doc.createElement("list");
+        e.setAttribute("name", name);
+        element.appendChild(e);
+        return new ObjectXMLNode(e);
+    }
+
+    public ObjectXMLNode addChildList(int index) {
+        Element e = doc.createElement("list");
+        e.setAttribute("index", String.valueOf(index));
+        element.appendChild(e);
+        return new ObjectXMLNode(e);
+    }
+
+    public List<ObjectXMLNode> getChildren() {
+        List<ObjectXMLNode> children = new ArrayList<>();
+        NodeList nl = element.getChildNodes();
+        for (int i=0; i<nl.getLength(); i++) {
+            Node n = nl.item(i);
+            if (n instanceof Element) {
+                children.add(new ObjectXMLNode((Element)n));
+            }
+        }
+        return children;
+    }
+
+    @Override
+    public Iterator<ObjectXMLNode> iterator() {
+        return new Iterator<ObjectXMLNode>() {
+
+            private int index = 0;
+            private NodeList nl = element.getChildNodes();
+
+            @Override
+            public boolean hasNext() {
+                for (int i = index; i<nl.getLength(); i++) {
+                    Node n = nl.item(i);
+                    if (n instanceof Element)
+                        return true;
+                }
+                return false;
+            }
+
+            @Override
+            public ObjectXMLNode next() {
+                for (int i = index; i<nl.getLength(); i++) {
+                    Node n = nl.item(i);
+                    if (n instanceof Element) {
+                        index = i;
+                        return new ObjectXMLNode((Element)n);
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException("Not supported.");
+            }
+        };
+    }
+
+    public String getXML() {
+        DOMSource source = new DOMSource(element);
+        StringWriter writer = new StringWriter();
+        StreamResult result = new StreamResult(writer);
+        try {
+            transformer.transform(source, result);
+        } catch (TransformerException ex) {
+            throw new ObjectXMLException(ex);
+        }
+        return writer.toString();
+    }
+
+    public void save(String ref) {
+        DOMSource source = new DOMSource(element);
+        StreamResult result = new StreamResult(ResourceManager.getDefault().getResource(ref).openWrite());
+        try {
+            transformer.transform(source, result);
+        } catch (TransformerException ex) {
+            throw new ObjectXMLException(ex);
+        }
+    }
+
+    public void save(OutputStream os) {
+        DOMSource source = new DOMSource(element);
+        StreamResult result = new StreamResult(os);
+        try {
+            transformer.transform(source, result);
+        } catch (TransformerException ex) {
+            throw new ObjectXMLException(ex);
+        }
+    }
+
+}

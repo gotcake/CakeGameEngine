@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><objxml>
+   <object class="org.cake.game.particle2.StaticParticleEmitter">
+      <object class="org.cake.game.FloatRange" high="10.0f" low="-10.0f" name="particleInitialXOffset"/>
+      <object class="org.cake.game.FloatRange" high="10.0f" low="-10.0f" name="particleInitialYOffset"/>
+      <object class="org.cake.game.FloatRange" high="5.0f" low="-5.0f" name="particleInitialXVelocity"/>
+      <object class="org.cake.game.FloatRange" high="2.5f" low="2.0f" name="particleInitialLife"/>
+      <object class="org.cake.game.FloatRange" high="10.0f" low="8.0f" name="emitterInitialLife"/>
+      <object class="org.cake.game.FloatRange" high="1.0f" low="0.5f" name="emitterBurstLength"/>
+      <object class="org.cake.game.FloatRange" high="1.0f" low="0.5f" name="emitterBurstBreakLength"/>
+      <object class="org.cake.game.FloatRange" high="150.0f" low="100.0f" name="emitterSpawnRate"/>
+      <object class="org.cake.game.FloatRange" high="15.0f" low="10.0f" name="particleInitialSize"/>
+      <object class="org.cake.game.FloatRange" high="25.0f" low="20.0f" name="particleEndSize"/>
+      <number name="gravity" value="9.8f"/>
+      <number name="wind" value="0.0f"/>
+      <object class="org.cake.game.particle2.FillShapeParticleRenderer" name="particleRenderer">
+         <object class="org.cake.game.BiColorGradient" name="gradient">
+            <boolean name="repeats" value="true"/>
+            <object class="org.cake.game.Color$ImmutableColor" name="a" value="white"/>
+            <object class="org.cake.game.Color$ImmutableColor" name="b" value="black"/>
+         </object>
+         <number name="initialOpacity" value="1.0f"/>
+         <number name="finalOpacity" value="0.0f"/>
+         <enum class="org.cake.game.particle2.iParticleRenderer$FadeCurve" name="fadeCurve" value="Linear"/>
+      </object>
+      <enum class="org.cake.game.particle2.StaticParticleEmitter$EmitterMode" name="emitterMode" value="Burst"/>
+   </object>
+</objxml>

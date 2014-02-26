@@ -1,0 +1,5 @@
+[sounds]
+footsteps = resources/sounds/footsteps.wav
+
+[images]
+smiley = resources/images/smiley_white_background.png

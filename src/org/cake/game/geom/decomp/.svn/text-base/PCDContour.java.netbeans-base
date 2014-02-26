@@ -1,0 +1,125 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.geom.decomp;
+
+import java.util.List;
+import javax.media.opengl.GL2;
+import org.cake.game.collision.AABB;
+import org.cake.game.geom.*;
+
+/**
+ * A contour implementation that uses pre-computed values (Pre-Computed Contour)
+ * @author Aaron Cake
+ */
+public class PCDContour implements iDecompContour {
+    
+    private List<Vector2> points;
+    private AABB bounds;
+    private float radiusSquared;
+    private Vector2 center;
+    private int glType;
+    
+    public PCDContour(List<Vector2> points, int glType) {
+        this.points = points;
+        bounds = new AABB(points);
+        center = GeomUtil.getCenter(points, null);
+        radiusSquared = GeomUtil.getMaxRaduisSquared(points, center);
+        this.glType = glType;
+    }
+    
+    public PCDContour(List<Vector2> points, Vector2 center, float radiusSquared, AABB bounds, int glType) {
+        this.points = points;
+        this.bounds = bounds;
+        this.center = center;
+        this.radiusSquared = radiusSquared;
+        this.glType = glType;
+    }
+
+    @Override
+    public List<Vector2> getPoints() {
+        return points;
+    }
+
+    @Override
+    public AABB getAABB() {
+        return bounds;
+    }
+
+    @Override
+    public Vector2 getCenter() {
+        return center;
+    }
+
+    @Override
+    public float getRadiusSquared() {
+        return radiusSquared;
+    }
+
+    @Override
+    public boolean contains(Vector2 point) {
+        return bounds.contains(point)
+                && point.distanceToSquared(center) <= radiusSquared
+                && GeomUtil.containsPoint(points, point);
+    }
+
+    @Override
+    public boolean intersects(iContour other) {
+        return center.distanceToSquared(other.getCenter()) <= radiusSquared + other.getRadiusSquared()
+                && bounds.intersects(other.getAABB())
+                && GeomUtil.intersects(points, other.getPoints());
+    }
+
+    @Override
+    public AABB getAABB(iTransform2 trans) {
+        if (trans.isIdentity())
+            return bounds;
+        return new AABB(points, trans);
+    }
+
+    @Override
+    public int getNumPoints() {
+        return points.size();
+    }
+
+    @Override
+    public Vector2 getPoint(int i) {
+        return points.get(i);
+    }
+
+    @Override
+    public boolean isSimpleConvex() {
+        return true;
+    }
+
+    @Override
+    public boolean isCCW() {
+        return true;
+    }
+
+    @Override
+    public int getGLType() {
+        return glType;
+    }
+
+    @Override
+    public void glBind(GL2 gl) {
+        Vector2 p;
+        for (int i=0; i<points.size(); i++) {
+            p = points.get(i);
+            gl.glVertex2f(p.x, p.y);
+        }
+    }
+
+    @Override
+    public void glBind(GL2 gl, iPointCallback pcb) {
+        Vector2 p;
+        for (int i=0; i<points.size(); i++) {
+            p = points.get(i);
+            pcb.point(p);
+            gl.glVertex2f(p.x, p.y);
+        }
+    }
+    
+}

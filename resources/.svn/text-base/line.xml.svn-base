@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objxml>
+   <object class="org.cake.game.geom.Line2" x1="1.0f" x2="3.0f" y1="2.0f" y2="4.0f"/>
+</objxml>

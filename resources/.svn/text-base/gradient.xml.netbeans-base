@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objxml>
+   <object class="org.cake.game.BiColorGradient" repeat="true">
+      <object a="1.0f" b="0.0f" class="org.cake.game.Color$ImmutableColor" g="0.0f" name="a" r="0.0f"/>
+      <object a="1.0f" b="0.0f" class="org.cake.game.Color$ImmutableColor" g="0.0f" name="b" r="1.0f"/>
+   </object>
+</objxml>

@@ -1,0 +1,38 @@
+
+package org.cake.game.io;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * A cache that holds items directly in memory via a Map. Cached items will not be guaranteed until the cache is manually cleared.
+ * @author Aaron Cake
+ */
+public class HardCache<K, V> implements iCache<K, V> {
+
+    private Map<K, V> map;
+
+    public HardCache() {
+        map = new HashMap<>();
+    }
+
+    @Override
+    public boolean has(K key) {
+        return map.containsKey(key);
+    }
+
+    @Override
+    public V get(K key) {
+        return map.get(key);
+    }
+
+    @Override
+    public void put(K key, V value) {
+        map.put(key, value);
+    }
+
+    @Override
+    public void clear() {
+        map.clear();
+    }
+}

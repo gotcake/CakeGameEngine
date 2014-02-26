@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?><objxml>
+   <object class="org.cake.game.BiColorGradient">
+      <boolean name="repeats" value="true"/>
+      <object class="org.cake.game.Color$ImmutableColor" name="a" value="black"/>
+      <object class="org.cake.game.Color$ImmutableColor" name="b" value="red"/>
+   </object>
+</objxml>

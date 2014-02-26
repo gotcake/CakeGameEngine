@@ -1,0 +1,91 @@
+/*
+    This file is part of CakeGame engine.
+
+    CakeGame engine is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    CakeGame engine is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with CakeGame engine.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.cake.game.input;
+
+import static java.awt.event.InputEvent.*;
+import java.util.EnumSet;
+
+/**
+ * Describes a key event such as a press, release, a key being typed or toggled.
+ * @author Aaron Cake
+ */
+public class GameKeyEvent {
+
+    static final int KEY_RELEASED = 1;
+    static final int KEY_PRESSED = 2;
+    static final int KEY_TOGGLED = 3;
+    static final int KEY_TYPED = 4;
+
+    private final int eventType, modifiers;
+
+    public final Key key;
+    public final long eventTime;
+    public final char keyChar;
+    public final boolean state;
+
+
+    public GameKeyEvent(int type, int key, int mod, long time, char ch, boolean state) {
+        this.eventType = type;
+        this.key = Key.getByCode(key);
+        this.modifiers = mod;
+        this.eventTime = time;
+        this.keyChar = ch;
+        this.state = state;
+    }
+
+    public boolean isKeyPressed() {
+        return eventType == KEY_PRESSED;
+    }
+
+    public boolean isKeyReleased() {
+        return eventType == KEY_RELEASED;
+    }
+
+    public boolean isKeyToggled() {
+        return eventType == KEY_TOGGLED;
+    }
+
+    public boolean isKeyTyped() {
+        return eventType == KEY_TYPED;
+    }
+
+    public boolean isAltDown() {
+        return (modifiers & ALT_DOWN_MASK) != 0;
+    }
+
+    public boolean isShiftDown() {
+        return (modifiers & SHIFT_DOWN_MASK) != 0;
+    }
+
+    public boolean isCtrlDown() {
+        return (modifiers & CTRL_DOWN_MASK) != 0;
+    }
+
+    public boolean isMetaDown() {
+        return (modifiers & META_DOWN_MASK) != 0;
+    }
+
+    public int getModifierMask() {
+        return modifiers;
+    }
+
+    public EnumSet<Modifier> getModifiers() {
+        return Modifier.getSetByMask(modifiers);
+    }
+
+}

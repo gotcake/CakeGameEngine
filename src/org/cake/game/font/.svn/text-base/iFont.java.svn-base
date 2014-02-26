@@ -1,0 +1,78 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.font;
+
+import javax.media.opengl.GL2;
+import org.cake.game.collision.AABB;
+
+/**
+ * An interface describing a font that can draw to the screen.
+ * @author Aaron Cake
+ */
+public interface iFont {
+
+    /**
+     * Draws some string at the given location
+     * May optionally be used between calls of beginDrawing and endDrawing
+     * @param gl the gl context
+     * @param str a string or an object to be converted to a string
+     * @param x the x position to draw
+     * @param y the y position to draw
+     */
+    public void draw(GL2 gl, Object str, float x, float y);
+
+    /**
+     * An optional method which certain font implementations may choose to use
+     * In order to optimize drawing large numbers or strings
+     * @param gl
+     */
+    public void beginDrawing(GL2 gl);
+
+    /**
+     * An optional method which certain font implementations may choose to use
+     * In order to optimize drawing large numbers or strings
+     * @param gl
+     */
+    public void endDrawing(GL2 gl);
+
+    /**
+     * Gets an AABB describing the bounds of a string when drawn to the screen
+     * @param str a string
+     * @return the bounds
+     */
+    public AABB getStringBounds(String str);
+
+    /**
+     * Gets the size of the font, may or may not be
+     * accurate representation of a number of units
+     * @return the font size
+     */
+    public float getSize();
+
+    /**
+     * Sets the size of the font
+     * @param size
+     */
+    public void setSize(float size);
+
+    /**
+     * Gets the line height for this font
+     * @return the line height
+     */
+    public float getLineHight();
+
+    /**
+     * Gets the line ascent for this font
+     * @return the line ascent
+     */
+    public float getAscent();
+
+    /**
+     * Gets the line descent for this font
+     * @return the line descent.
+     */
+    public float getDescent();
+
+}

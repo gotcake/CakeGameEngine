@@ -1,0 +1,206 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.geom.decomp;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import javax.media.opengl.GL2;
+import org.cake.game.collision.AABB;
+import org.cake.game.exception.GameException;
+import org.cake.game.geom.*;
+
+/**
+ *
+ * @author Aaron
+ */
+public class DecompPolygon implements iDecompContour {
+
+    protected AABB bounds;
+    protected Vector2 center;
+    protected Float radius;
+    protected List<Vector2> pts;
+
+    public DecompPolygon(Vector2... pts) {
+        if (pts.length < 3) {
+           throw new GameException("Polygon must have at least 3 points.");
+        }
+        this.pts = Arrays.asList(pts);
+        if (!GeomUtil.isCCW(this.pts))
+            Collections.reverse(this.pts);
+        if (!GeomUtil.isSimpleConvex(this.pts))
+            throw new GameException("Points must be a simple convex shape.");
+    }
+
+    public DecompPolygon(List<Vector2> pts) {
+        if (pts.size() < 3) {
+           throw new GameException("Polygon must have at least 3 points.");
+        }
+        this.pts = pts;
+        if (!GeomUtil.isCCW(this.pts))
+            Collections.reverse(this.pts);
+        if (!GeomUtil.isSimpleConvex(this.pts))
+            throw new GameException("Points must be a simple convex shape.");
+    }
+
+    protected DecompPolygon(List<Vector2> pts, boolean ignoreSC, boolean ignoreCCW, int size) {
+        if (pts.size() != size) {
+           throw new GameException("Shape must have exactly "+size+" points.");
+        }
+        this.pts = pts;
+        if (!ignoreCCW && !GeomUtil.isCCW(this.pts))
+            Collections.reverse(this.pts);
+        if (!ignoreSC && !GeomUtil.isSimpleConvex(this.pts))
+            throw new GameException("Points must be a simple convex shape.");
+    }
+
+    @Override
+    public AABB getAABB() {
+        if (bounds == null)
+            bounds = generateBounds();
+        return bounds;
+    }
+
+    @Override
+    public Vector2 getCenter() {
+        if (center == null)
+            center = generateCenter();
+        return center;
+    }
+
+    @Override
+    public float getRadiusSquared() {
+        if (radius == null)
+            radius = generateRadius();
+        return radius * radius;
+    }
+
+    @Override
+    public boolean contains(Vector2 point) {
+        if (bounds == null)
+            bounds = generateBounds();
+        if (center == null)
+            center = generateCenter();
+        if (radius == null)
+            radius = generateRadius();
+        return bounds.contains(point) && center.distanceToSquared(point) < radius * radius
+                && GeomUtil.containsPoint(getPoints(), point);
+    }
+
+    @Override
+    public boolean intersects(iContour other) {
+        if (bounds == null)
+            bounds = generateBounds();
+        if (center == null)
+            center = generateCenter();
+        if (radius == null)
+            radius = generateRadius();
+        return bounds.intersects(other.getAABB()) && center.distanceTo(other.getCenter()) < radius + other.getRadius()
+                && GeomUtil.intersects(getPoints(), other.getPoints());
+    }
+
+    @Override
+    public boolean isSimple() {
+        return true;
+    }
+
+    @Override
+    public boolean isCCW() {
+        return true;
+    }
+
+    protected AABB generateBounds() {
+        return new AABB(pts);
+    }
+
+    @Override
+    public AABB getAABB(iTransform2 trans) {
+        return new AABB(pts, trans);
+    }
+
+    protected Vector2 generateCenter() {
+        return GeomUtil.getWeightedCenter(pts, null);
+    }
+
+    protected float generateRadius() {
+        if (center == null)
+            center = generateCenter();
+        return GeomUtil.getMaxRaduisSquared(pts, center);
+    }
+
+    @Override
+    public List<Vector2> getPoints() {
+        return pts;
+    }
+
+    @Override
+    public int getNumPoints() {
+        return pts.size();
+    }
+
+    @Override
+    public Vector2 getPoint(int i) {
+        return pts.get(i);
+    }
+
+    @Override
+    public void glBind(GL2 gl) {
+        Vector2 p;
+        for (int i=0; i<pts.size(); i++) {
+            p = pts.get(i);
+            gl.glVertex2f(p.x, p.y);
+        }
+    }
+
+    @Override
+    public void glBind(GL2 gl, iPointCallback pcb) {
+        Vector2 p;
+        for (int i=0; i<pts.size(); i++) {
+            p = pts.get(i);
+            pcb.point(gl, p);
+            gl.glVertex2f(p.x, p.y);
+        }
+    }
+
+    @Override
+    public int getGLType() {
+        return GL2.GL_POLYGON;
+    }
+
+    @Override
+    public void draw(GL2 gl) {
+        Vector2 p;
+        gl.glBegin(GL2.GL_LINE_LOOP);
+        for (int i=0; i<pts.size(); i++) {
+            p = pts.get(i);
+            gl.glVertex2f(p.x, p.y);
+        }
+        gl.glEnd();
+    }
+
+    @Override
+    public void fill(GL2 gl) {
+        Vector2 p;
+        gl.glBegin(getGLType());
+        for (int i=0; i<pts.size(); i++) {
+            p = pts.get(i);
+            gl.glVertex2f(p.x, p.y);
+        }
+        gl.glEnd();
+    }
+
+    @Override
+    public float getRadius() {
+        if (radius == null)
+            radius = generateRadius();
+        return radius;
+    }
+
+    @Override
+    public boolean isConvex() {
+        return true;
+    }
+}

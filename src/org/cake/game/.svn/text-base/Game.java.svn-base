@@ -1,0 +1,591 @@
+/*
+    This file is part of CakeGame engine.
+
+    CakeGame engine is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    CakeGame engine is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with CakeGame engine.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.cake.game;
+
+import com.jogamp.opengl.util.AnimatorBase;
+import com.jogamp.opengl.util.FPSAnimator;
+import java.awt.Dimension;
+import java.awt.DisplayMode;
+import java.util.*;
+import javax.media.opengl.*;
+import javax.media.opengl.glu.GLU;
+import javax.swing.SwingUtilities;
+import org.cake.collections.WeakList;
+import org.cake.game.exception.GameException;
+import org.cake.game.geom.Vector2;
+import org.cake.game.input.Keyboard;
+import org.cake.game.input.Mouse;
+
+/**
+ * An abstract implementation of a game, also a static interface to the current game.
+ * @author Aaron Cake
+ */
+public abstract class Game {
+
+    private static Game currentGame = null;
+
+    /**
+     * Gets the current Game instance. If none is yet available or the game is finished, throws an exception.
+     * @return
+     */
+    public static Game currentGame() {
+        if (currentGame == null)
+            throw new GameException("There is no current game. Please make sure to only use game/openGL methods during the game lifecycle.");
+        return currentGame;
+    }
+
+    protected Keyboard keyboard;
+    protected Mouse mouse;
+    private Map<Object, Object> dataMap;
+    //private List<Reference<iInvalidationListener>> invalidationListeners;
+    private WeakList<iInvalidationListener> invalidationListeners;
+    private List<iGameLifecycleListener> lifecycleListeners;
+    private List<iGameResizeListener> resizeListeners;
+    //private List<iGameLifecycleListener> lifecycleListeners;
+    private List<iGameRunnable> injections;
+    private Graphics graphics;
+    //private iGameCallback callback;
+    private iGameAdapter adapter;
+    private iViewportMetrics viewportMetrics;
+    protected FPSAnimator animator;
+    private long lastFramerateUpdate, frameCount, lastLoop, delta;
+    private boolean exitRequested, forceExit, reshapeDirty, invalid, inited, clearScreen;
+    private int width, height;
+    private float fps;
+    private GLU glu;
+
+    protected Game() {
+        if (currentGame != null)
+            throw new GameException("Only one Game instance allowed at a time!");
+        currentGame = this;
+        injections = Collections.synchronizedList(new ArrayList());
+        invalidationListeners = new WeakList();
+        lifecycleListeners = new ArrayList();
+        resizeListeners = new ArrayList<>();
+        dataMap = new HashMap<>();
+        fps = delta = frameCount = 0;
+        exitRequested = forceExit = invalid = false;
+        reshapeDirty = true;
+        viewportMetrics = new DefaultViewportMetrics();
+        keyboard = new Keyboard(this);
+        mouse = new Mouse(this);
+        animator = new FPSAnimator(null, 60, true);
+        inited = false;
+        clearScreen = true;
+        graphics = new Graphics();
+    }
+
+    public void setGameAdapter(iGameAdapter adapter) {
+        this.adapter = adapter;
+    }
+    
+    public Thread getThread() {
+        return animator.getThread();
+    }
+
+    /**
+     * Called to get the display ready. (it should already be initialized)
+     */
+    protected abstract void readyDisplay();
+
+
+    /**
+     * Unloads and finalizes the display
+     */
+    protected abstract void unloadDisplay();
+
+    /**
+     * To be implemented by the sub-class to add listeners to the GL context.
+     * @param gle
+     */
+    protected abstract void addGLEventListener(GLEventListener gle);
+
+    /**
+     * Sets the game to or from fullscreen mode with the current display mode.
+     * @param b
+     * @throws GameException
+     */
+    public abstract void setFullscreen(boolean b) throws GameException;
+
+    /**
+     * Sets the game to or from fullscreen mode with the given DisplayMode
+     * @param b
+     * @param dm
+     * @throws GameException
+     */
+    public abstract void setFullscreen(boolean b, DisplayMode dm) throws GameException;
+
+    /**
+     * Set the size of the game display (not the window) when not in fullscreen mode
+     * @param d
+     */
+    public abstract void setDisplaySize(Dimension d);
+
+    /**
+     * Set the size of the game display (not the window) when not in fullscreen mode
+     * @param width
+     * @param height
+     */
+    public abstract void setDisplaySize(int width, int height);
+
+    public void addListener(Object listener) {
+        if (listener instanceof iInvalidationListener) {
+            invalidationListeners.add((iInvalidationListener)listener);
+        }
+        if (listener instanceof iGameLifecycleListener) {
+            lifecycleListeners.add((iGameLifecycleListener)listener);
+        }
+        if (listener instanceof iGameResizeListener) {
+            resizeListeners.add((iGameResizeListener)listener);
+        }
+    }
+
+    public void removeListener(Object listener) {
+        if (listener instanceof iInvalidationListener) {
+            invalidationListeners.remove((iInvalidationListener)listener);
+        }
+        if (listener instanceof iGameLifecycleListener) {
+            lifecycleListeners.remove((iGameLifecycleListener)listener);
+        }
+        if (listener instanceof iGameResizeListener) {
+            resizeListeners.remove((iGameResizeListener)listener);
+        }
+    }
+
+    /**
+     * Gets the size of the display.
+     * @return
+     */
+    public abstract Dimension getDisplaySize();
+
+    /**
+     * Gets the height of the display.
+     * @return
+     */
+    public abstract int getDisplayHeight();
+
+    /**
+     * Gets the width of the display
+     * @return
+     */
+    public abstract int getDisplayWidth();
+
+    /**
+     * Gets whether or not the game is in fullscreen mode.
+     * @return
+     */
+    public abstract boolean isFullscreen();
+
+    /**
+     * Calls the invalidation listeners to update screen resources.
+     */
+    private void callInvalidationListeners() {
+        Log.getDefault().verbose("Invalidated. Calling InvalidationListeners");
+        for (iInvalidationListener l: invalidationListeners) {
+            l.invalidated(this);
+        }
+        for (iInvalidationListener l: invalidationListeners) {
+            l.postInvalidation(this);
+        }
+    }
+
+    protected void alertResize(int width, int height) {
+        for (iGameLifecycleListener listener: lifecycleListeners) {
+            listener.gameDisplayResized(this, width, height);
+        }
+    }
+
+    protected void alertEnterFullscreen() {
+        for (iGameLifecycleListener listener: lifecycleListeners) {
+            listener.gameEnteringFullscreen(this);
+        }
+    }
+
+    protected void alertExitFullscreen() {
+        for (iGameLifecycleListener listener: lifecycleListeners) {
+            listener.gameExitedFullscreen(this);
+        }
+    }
+
+    /**
+     * Gets this game's graphics instance
+     * @return
+     */
+    public Graphics getGraphics() {
+        return graphics;
+    }
+
+    protected AnimatorBase getAnimator() {
+        return animator;
+    }
+
+    /**
+     * Called to actually start the game.
+     */
+    public void start() {
+        currentGame = this;
+        readyDisplay();
+        keyboard.setup();
+        mouse.setup();
+        lastFramerateUpdate = lastLoop = System.nanoTime();
+
+        for (iGameLifecycleListener listener: lifecycleListeners) {
+            listener.gameStarted(this);
+        }
+
+        addGLEventListener(new GLEventListener() {
+            @Override
+            public void init(GLAutoDrawable drawable) {
+                glu = new GLU();
+                graphics.init(drawable.getGL().getGL2(), glu);
+                if (adapter == null) {
+                    throw new GameException("Must supply a game callback, callback cannot be null.");
+                }
+                if (!inited) {
+                    adapter.init(Game.this);
+                    graphics.initGL();
+                    inited = true;
+                }
+
+            }
+
+            @Override
+            public void display(GLAutoDrawable drawable) {
+                if (invalid) {
+                    invalid = false;
+                    graphics.initGL();
+                    callInvalidationListeners();
+                }
+
+                // Update the delta and FPS
+                long time = System.nanoTime();
+                delta = time - lastLoop;
+                lastLoop = time;
+                if (time - lastFramerateUpdate > 1000000000L) {
+                    fps = (float)(frameCount / ((time - lastFramerateUpdate) / 1000000000.0));
+                    frameCount = 1;
+                    lastFramerateUpdate = time;
+                } else {
+                    frameCount++;
+                }
+
+                GL gl = drawable.getGL();
+
+                // Update the viewport if dirty
+                if (viewportMetrics.isDirty() || reshapeDirty) {
+                    float w = viewportMetrics.getVirtualWidth();
+                    float h = viewportMetrics.getVirtualHeight();
+                    viewportMetrics.apply(Game.this, drawable, width, height);
+                    if (reshapeDirty) {
+                        alertResize(width, height);
+                    }
+                    if ((w != viewportMetrics.getVirtualWidth() || h != viewportMetrics.getVirtualHeight())) {
+                        for (iGameResizeListener l: resizeListeners) {
+                            l.resized(Game.this, viewportMetrics.getVirtualWidth(), viewportMetrics.getVirtualHeight());
+                        }
+                    }
+                    reshapeDirty = false;
+                }
+
+                // Check exit requests against the callback
+                if (exitRequested) {
+                    exitRequested = false;
+                    if (!forceExit && adapter.exitRequested(Game.this)) {
+                        forceExit = true;
+                    }
+                }
+
+                if (forceExit) { // Exit immediately
+                    forceExit = false;
+                    adapter.exit(Game.this);
+                    animator.stop();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            unloadDisplay();
+                            currentGame = null;
+                            adapter.finished();
+                            for (iGameLifecycleListener listener: lifecycleListeners) {
+                                listener.gameFinished();
+                            }
+                        }
+                    });
+                } else { // Update stuff and render
+                    keyboard.poll();
+                    mouse.poll();
+                    adapter.update(Game.this, getDelta());
+                    if (clearScreen)
+                        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+                    adapter.render(Game.this, graphics);
+                    while (!injections.isEmpty()) {
+                        injections.remove(0).run(Game.this);
+                    }
+                }
+
+            }
+
+            @Override
+            public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
+                if (!invalid && Game.this.width == width && Game.this.height == height) return;
+                Log.getDefault().debug("Display Resized: (" + width + ", " + height + ")");
+                Game.this.width = getDisplayWidth();
+                Game.this.height = getDisplayHeight();
+                reshapeDirty = true;
+            }
+
+            @Override
+            public void dispose(GLAutoDrawable drawable) {
+                invalid = true;
+            }
+
+        });
+        animator.start();
+    }
+
+    /**
+     * Forces the game to exit at the end of the loop.
+     */
+    public void exit() {
+        forceExit = true;
+    }
+
+    /**
+     * Passes an exit request to the callback for handling.
+     */
+    public void requestExit() {
+        exitRequested = true;
+    }
+
+    /**
+     * Sets the iViewportMetrics which handle the screen layout.
+     * @param vpm
+     */
+    public void setViewportMetrics(iViewportMetrics vpm) {
+        viewportMetrics = vpm;
+    }
+
+    /**
+     * Gets the viewport metrics.
+     * @return
+     */
+    public iViewportMetrics getViewportMetrics() {
+        return viewportMetrics;
+    }
+
+    /**
+     * Gets the game's utility data map
+     * @return
+     */
+    public Map<Object, Object> getDataMap() {
+        return dataMap;
+    }
+
+    /**
+     * Sets the game's data map.
+     * @param map
+     */
+    public void setDataMap(Map<Object, Object> map) {
+        dataMap = map;
+    }
+
+    /**
+     * Gets an object stored in the game's data map given by the specified key.
+     * @param key
+     * @return the value
+     */
+    public Object get(Object key) {
+        return dataMap.get(key);
+    }
+
+    /**
+     * Checks to see if the game's data map has a value associated with the given key.
+     * @param key
+     * @return true if it does
+     */
+    public boolean has(Object key) {
+        return dataMap.containsKey(key);
+    }
+
+    /**
+     * Gets the value from the game's data set as an integer.
+     * @param key
+     * @return
+     */
+    public int getInt(Object key) {
+        Object o = dataMap.get(key);
+        if (o instanceof Number) {
+            return ((Number)o).intValue();
+        } else {
+            return Integer.parseInt(o.toString());
+        }
+    }
+
+    /**
+     * Gets the value from the game's data set as string.
+     * @param key
+     * @return
+     */
+    public String getString(Object key) {
+        return dataMap.get(key).toString();
+    }
+
+    /**
+     * Gets the value from the game's data set as a float.
+     * @param key
+     * @return
+     */
+    public float getFloat(Object key) {
+        Object o = dataMap.get(key);
+        if (o instanceof Number) {
+            return ((Number)o).floatValue();
+        } else {
+            return Float.parseFloat(o.toString());
+        }
+    }
+
+    /**
+     * Gets the value from the game's data set as a double.
+     * @param key
+     * @return
+     */
+    public double getDouble(Object key){
+        Object o = dataMap.get(key);
+        if (o instanceof Number) {
+            return ((Number)o).doubleValue();
+        } else {
+            return Double.parseDouble(o.toString());
+        }
+    }
+
+    /**
+     * Sets a value for a given key in the game's data map.
+     * @param key
+     * @param data
+     */
+    public void set(Object key, Object data) {
+        dataMap.put(key, data);
+    }
+
+    /**
+     * Get the keyboard object for this game.
+     * @return
+     */
+    public Keyboard getKeyboard() {
+        return keyboard;
+    }
+
+    /**
+     * Get the mouse object for this game.
+     * @return
+     */
+    public Mouse getMouse() {
+        return mouse;
+    }
+
+    /**
+     * Gets the amount of time in nanoseconds since the last game loop
+     * @return
+     */
+    public long getNanoDelta() {
+        return delta;
+    }
+
+    /**
+     * Gets the virtual width of the game
+     * @return the virtual width of the game
+     */
+    public float getWidth() {
+        return viewportMetrics.getVirtualWidth();
+    }
+
+    /**
+     * Gets the virtual height of the game
+     * @return the virtual height of the game
+     */
+    public float getHeight() {
+        return viewportMetrics.getVirtualHeight();
+    }
+
+    /**
+     * Gets the virtual size of the game
+     * @return the virtual size of the game
+     */
+    public Vector2 getSize() {
+        return new Vector2(viewportMetrics.getVirtualWidth(), viewportMetrics.getVirtualHeight());
+    }
+
+    /**
+     * Gets the number of seconds since the last game loop iteration
+     * @return
+     */
+    public float getDelta() {
+        return delta / 1000000000f;
+    }
+
+    public void setClearScreen(boolean b) {
+        clearScreen = b;
+    }
+
+    /**
+     * Gets the current FPS, updated every second.
+     * @return
+     */
+    public float getFPS() {
+        return fps;
+    }
+
+    public abstract GLProfile getProfile();
+
+
+    public void inject(iGameRunnable runnable) {
+        injections.add(runnable);
+    }
+
+    public void injectWait(final iGameRunnable runnable) {
+        System.out.println(Thread.currentThread());
+        System.out.println(animator.getThread());
+
+        if (Thread.currentThread().equals(animator.getThread())) {
+            throw new GameException("Cannot injectWait on the game thread!");
+        }
+        final Object lock = new Object();
+        injections.add(new iGameRunnable() {
+            @Override
+            public void run(Game g) {
+                synchronized (lock) {
+                    try {
+                        runnable.run(g);
+                        lock.notify();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        synchronized (lock) {
+            try {
+                lock.wait();
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+
+
+}

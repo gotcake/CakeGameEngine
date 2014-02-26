@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/geom/decomp
+END
+iDecomposer.java
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/geom/decomp/iDecomposer.java
+END
+SimpleDecomposer.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/geom/decomp/SimpleDecomposer.java
+END
+GLUTessDecomposer.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/geom/decomp/GLUTessDecomposer.java
+END

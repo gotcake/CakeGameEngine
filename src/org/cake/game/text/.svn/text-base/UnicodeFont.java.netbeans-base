@@ -1,0 +1,109 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.text;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
+import java.awt.geom.Rectangle2D;
+import javax.media.opengl.GLContext;
+import org.cake.game.Color;
+import org.cake.game.Game;
+import org.cake.game.collision.AABB;
+
+/**
+ * A font that implements any installed font.
+ * @author Aaron Cake
+ */
+public class UnicodeFont implements iFont {
+    
+    public enum Style {
+        BOLD (java.awt.Font.BOLD),
+        ITALIC (java.awt.Font.ITALIC);
+        private int val;
+        private Style(int v) {
+            val = v;
+        }
+    }
+    
+    public UnicodeFont(String fontName, float size, Style... styleModifiers) {
+        int isize = (int)size;
+        this.scale = size/isize;
+        int style;
+        if (styleModifiers.length > 0) {
+            style = styleModifiers[0].val;
+            for (int i=1; i<styleModifiers.length; i++)
+                style |= styleModifiers[0].val;
+        } else {
+            style = java.awt.Font.PLAIN;
+        }
+        renderer = new TextRenderer(new java.awt.Font(fontName, isize, style), true, true, new TextRenderer.DefaultRenderDelegate(), true);
+        Rectangle2D maxBounds = renderer.getFont().getMaxCharBounds(renderer.getFontRenderContext());
+        height = (float)maxBounds.getHeight();
+        ascent = -(float)maxBounds.getMinY();
+        descent = (float)maxBounds.getMaxY();
+    }
+    
+    private TextRenderer renderer;
+    private float scale, height, ascent, descent;
+
+    @Override
+    public void drawString(String str, float x, float y) {
+        //renderer.begin3DRendering();
+        //Color.glClearColor(GLContext.getCurrentGL().getGL2());
+        //renderer.draw3D(str, x, y, 0, scale);
+        //renderer.end3DRendering();
+        //renderer.draw3D(str, x, y, 0, scale);
+    }
+
+    @Override
+    public void drawChar(char c, float x, float y) {
+        drawString(String.valueOf(c), x, y);
+    }
+
+    @Override
+    public float getLineHeight() {
+        return height * scale;
+    }
+
+    @Override
+    public float getAscent() {
+        return ascent * scale;
+    }
+
+    @Override
+    public float getDecent() {
+        return descent * scale;
+    }
+
+    @Override
+    public AABB getBounds(String str) {
+        Rectangle2D bounds = renderer.getBounds(str);
+        return new AABB((float)bounds.getMinX(),
+                (float)bounds.getMinY(), 
+                (float)bounds.getMaxX(),
+                (float)bounds.getMaxY());
+    }
+
+    @Override
+    public AABB getBounds(char c) {
+        return getBounds(String.valueOf(c));
+    }
+    
+    public float getSize() {
+        return renderer.getFont().getSize() * scale;
+    }
+    
+    public void setSize(float size) {
+        scale = size/renderer.getFont().getSize();
+    }
+    
+    public float getScale() {
+        return scale;
+    }
+    
+    public java.awt.Font getAWTFont() {
+        return renderer.getFont();
+    }
+    
+}

@@ -1,0 +1,77 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.scene;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import javax.media.opengl.GL2;
+import org.cake.game.Game;
+import org.cake.game.Graphics;
+import org.cake.game.Util;
+import org.cake.game.geom.iTransform2;
+
+/**
+ *
+ * @author Aaron Cake
+ */
+public abstract class SceneNode implements iEntity {
+
+    private static final Comparator<iEntity> entityComparer = new Comparator<iEntity>() {
+        @Override
+        public int compare(iEntity o1, iEntity o2) {
+            int p1 = o1.getZIndex(), p2 = o2.getZIndex();
+            return p1 == p2 ? 0 : (p1 > p2 ? 1 : -1);
+        }
+    };
+
+    private List<iEntity> entities;
+    private iTransform2 transform;
+
+    public SceneNode() {
+        entities = new ArrayList<>();
+    }
+
+    public void add(iEntity entity) {
+        Util.addSorted(entities, entity, Util.ALWAYS_ADD, entityComparer);
+    }
+
+    public void remove(iEntity entity) {
+        entities.remove(entity);
+    }
+
+    public iTransform2 getTransform() {
+        return transform;
+    }
+
+    public void setTransform(iTransform2 transform) {
+        this.transform = transform;
+    }
+
+    @Override
+    public void render(Game game, Graphics g) {
+        if (transform != null && !transform.isIdentity()) {
+            GL2 gl = g.getGL();
+            gl.glPushMatrix();
+            transform.glMultMatrix(gl);
+            for (iEntity entity: entities) {
+                entity.render(game, g);
+            }
+            gl.glPopMatrix();
+        } else {
+            for (iEntity entity: entities) {
+                entity.render(game, g);
+            }
+        }
+    }
+
+    @Override
+    public void update(Game g, float delta) {
+        for (iEntity entity: entities) {
+            entity.update(g, delta);
+        }
+    }
+
+}

@@ -1,0 +1,91 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.geom;
+
+import java.util.List;
+import org.cake.game.collision.AABB;
+
+/**
+ * A very basic contour implementation that does not store AABB or radius information.
+ * @author Aaron Cake
+ */
+public class BasicContour implements iContour {
+
+    private List<Vector2> points;
+
+    public BasicContour(List<Vector2> points) {
+        this.points = points;
+    }
+
+    public void setPoints(List<Vector2> points) {
+        this.points = points;
+    }
+
+    @Override
+    public List<Vector2> getPoints() {
+        return points;
+    }
+
+    @Override
+    public AABB getAABB() {
+        return new AABB(points);
+    }
+
+    @Override
+    public Vector2 getCenter() {
+        return GeomUtil.getCenter(points, null);
+    }
+
+    @Override
+    public float getRadiusSquared() {
+        return GeomUtil.getMaxRaduisSquared(points);
+    }
+
+    @Override
+    public boolean contains(Vector2 point) {
+        return GeomUtil.containsPoint(points, point);
+    }
+
+    @Override
+    public boolean intersects(iContour other) {
+        return GeomUtil.intersects(points, other.getPoints());
+    }
+
+    @Override
+    public AABB getAABB(iTransform2 trans) {
+        return new AABB(points, trans);
+    }
+
+    @Override
+    public int getNumPoints() {
+        return points.size();
+    }
+
+    @Override
+    public Vector2 getPoint(int i) {
+        return points.get(i);
+    }
+
+    @Override
+    public boolean isSimple() {
+        return !GeomUtil.isSelfIntersecting(points);
+    }
+
+    @Override
+    public boolean isCCW() {
+        return GeomUtil.isCCW(points);
+    }
+
+    @Override
+    public float getRadius() {
+        return (float)Math.sqrt(GeomUtil.getMaxRaduisSquared(points));
+    }
+
+    @Override
+    public boolean isConvex() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+}

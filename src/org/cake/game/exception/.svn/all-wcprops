@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/7/trunk/CakeGame/src/org/cake/game/exception
+END
+GameException.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/7/trunk/CakeGame/src/org/cake/game/exception/GameException.java
+END
+ResourceException.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/7/trunk/CakeGame/src/org/cake/game/exception/ResourceException.java
+END

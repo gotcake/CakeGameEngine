@@ -1,0 +1,212 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.geom;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import javax.media.opengl.GL2;
+import org.cake.game.collision.AABB;
+import org.cake.game.geom.decomp.iDecompContour;
+
+/**
+ * A class providing common features for single contour shapes.
+ * @author Aaron Cake
+ */
+public abstract class aSingleContourShape implements iShape, iContour {
+
+    protected List<Vector2> points;
+    protected List<iContour> contours;
+    protected List<iDecompContour> decomposition;
+    protected AABB bounds;
+    protected Vector2 center;
+    protected Float radius;
+
+    @Override
+    public List<Vector2> getPoints() {
+        if (points == null)
+            points = generatePoints();
+        return points;
+    }
+
+    @Override
+    public List<iContour> getContours() {
+        if (contours == null) {
+            contours = Arrays.asList((iContour)this);
+        }
+        return contours;
+    }
+
+    @Override
+    public List<iDecompContour> getDecomposition() {
+        if (decomposition == null)
+            decomposition = generateDecomposition();
+        return decomposition;
+    }
+
+    @Override
+    public AABB getAABB() {
+        if (bounds == null)
+            bounds = generateBounds();
+        return bounds;
+    }
+
+    @Override
+    public AABB getAABB(iTransform2 trans) {
+        if (points == null)
+            points = generatePoints();
+        return new AABB(points, trans);
+    }
+
+    @Override
+    public Vector2 getCenter() {
+        if (center == null)
+            center = generateCenter();
+        return center;
+    }
+
+    @Override
+    public float getRadiusSquared() {
+        if (radius == null)
+            radius = generateRadius();
+        return radius * radius;
+    }
+
+    @Override
+    public boolean contains(Vector2 point) {
+        if (center == null)
+            center = generateCenter();
+        if (radius == null)
+            radius = generateRadius();
+        return  center.distanceToSquared(point) <= radius * radius
+                && getAABB().contains(point)
+                && GeomUtil.containsPoint(getPoints(), point);
+    }
+
+    @Override
+    public boolean intersects(iShape other) {
+        if (center == null)
+            center = generateCenter();
+        if (radius == null)
+            radius = generateRadius();
+        return  center.distanceTo(other.getCenter()) <= radius + other.getRadius()
+                && getAABB().intersects(other.getAABB())
+                && true; // TODO: Make narrow-phase collision methods
+    }
+
+    @Override
+    public void draw(GL2 gl) {
+        if (points == null)
+            points = generatePoints();
+        gl.glBegin(GL2.GL_LINE_LOOP);
+            for (Vector2 point: points) {
+                gl.glVertex2f(point.x, point.y);
+            }
+        gl.glEnd();
+    }
+
+    @Override
+    public void fill(GL2 gl) {
+        if (decomposition == null)
+            decomposition = generateDecomposition();
+        int type = 0;
+        for (iDecompContour dc: decomposition) {
+            if (type != dc.getGLType()) {
+                if (type != 0) {
+                    gl.glEnd();
+                }
+                gl.glBegin(type);
+            }
+            dc.glBind(gl);
+        }
+        gl.glEnd();
+    }
+
+    @Override
+    public void draw(GL2 gl, iPointCallback pcb) {
+        if (points == null)
+            points = generatePoints();
+        gl.glBegin(GL2.GL_LINE_LOOP);
+            for (Vector2 point: points) {
+                pcb.point(gl, point);
+                gl.glVertex2f(point.x, point.y);
+            }
+        gl.glEnd();
+    }
+
+    @Override
+    public void fill(GL2 gl, iPointCallback pcb) {
+        if (decomposition == null)
+            decomposition = generateDecomposition();
+        int type = 0;
+        for (iDecompContour dc: decomposition) {
+            if (type != dc.getGLType()) {
+                if (type != 0) {
+                    gl.glEnd();
+                }
+                gl.glBegin(type);
+            }
+            dc.glBind(gl, pcb);
+        }
+        gl.glEnd();
+    }
+
+    @Override
+    public int getNumPoints() {
+        if (points == null)
+            points = generatePoints();
+        return points.size();
+    }
+
+    @Override
+    public Vector2 getPoint(int i) {
+        if (points == null)
+            points = generatePoints();
+        return points.get(i);
+    }
+
+    @Override
+    public boolean intersects(iContour other) {
+        if (center == null)
+            center = generateCenter();
+        if (radius == null)
+            radius = generateRadius();
+        return  center.distanceTo(other.getCenter()) <= radius + other.getRadius()
+                && getAABB().intersects(other.getAABB())
+                && GeomUtil.intersects(getPoints(), other.getPoints());
+    }
+
+    protected List<Vector2> generatePoints() {
+        return new ArrayList<>();
+    }
+
+    protected List<iDecompContour> generateDecomposition() {
+        return GeomUtil.decompose(this);
+    }
+
+    protected AABB generateBounds() {
+        if (points == null)
+            points = generatePoints();
+        return new AABB(points);
+    }
+
+    protected Vector2 generateCenter() {
+        return GeomUtil.getWeightedCenter(points, null);
+    }
+
+    protected float generateRadius() {
+        if (center == null)
+            center = generateCenter();
+        return (float)Math.sqrt(GeomUtil.getMaxRaduisSquared(points, center));
+    }
+
+    @Override
+    public float getRadius() {
+        if (radius == null)
+            radius = generateRadius();
+        return radius;
+    }
+
+}

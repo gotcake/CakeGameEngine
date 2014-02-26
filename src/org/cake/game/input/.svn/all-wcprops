@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/input
+END
+Key.java
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/input/Key.java
+END
+iAction.java
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/input/iAction.java
+END
+iGameMouseListener.java
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/!svn/ver/2/trunk/CakeGame/src/org/cake/game/input/iGameMouseListener.java
+END
+aGameMouseAdapter.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/2/trunk/CakeGame/src/org/cake/game/input/aGameMouseAdapter.java
+END
+GameKeyEvent.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/input/GameKeyEvent.java
+END
+iGameKeyListener.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/input/iGameKeyListener.java
+END
+Keyboard.java
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/input/Keyboard.java
+END
+GameMouseEvent.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/input/GameMouseEvent.java
+END
+Modifier.java
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/input/Modifier.java
+END
+Mouse.java
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/input/Mouse.java
+END
+KeyAction.java
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/input/KeyAction.java
+END
+aGameKeyAdapter.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/input/aGameKeyAdapter.java
+END
+iActionListener.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/input/iActionListener.java
+END

@@ -1,0 +1,89 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game;
+
+import java.io.Serializable;
+import java.util.Objects;
+import org.cake.game.io.objectxml.ObjectXML;
+import org.cake.game.io.objectxml.ObjectXMLNode;
+import org.cake.game.io.objectxml.iObjectXMLParser;
+
+/**
+ * A simple bi-color 1 dimensional gradient with optional repeat
+ * @author Aaron Cake
+ */
+public class BiColorGradient implements iGradient1, Serializable {
+
+    static {
+        ObjectXML.registerParser(BiColorGradient.class, new iObjectXMLParser<BiColorGradient>() {
+            @Override
+            public BiColorGradient parse(ObjectXMLNode node) {
+                iColor a = (iColor)node.getNamedChild("a").getAsObject();
+                iColor b = (iColor)node.getNamedChild("b").getAsObject();
+                boolean repeat = node.getAttrBoolean("repeat");
+                return new BiColorGradient(a, b, repeat);
+            }
+
+            @Override
+            public boolean produce(ObjectXMLNode node, BiColorGradient g) {
+                node.addChild(g.a, "a");
+                node.addChild(g.b, "b");
+                node.setAttr("repeat", g.repeats);
+                return true;
+            }
+        });
+    }
+
+    private boolean repeats;
+    private iColor a, b;
+
+    public BiColorGradient(iColor a, iColor b, boolean repeat) {
+        this.a = a;
+        this.b = b;
+        this.repeats = repeat;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final BiColorGradient other = (BiColorGradient) obj;
+        if (this.repeats != other.repeats) {
+            return false;
+        }
+        if (!Objects.equals(this.a, other.a)) {
+            return false;
+        }
+        if (!Objects.equals(this.b, other.b)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 43 * hash + (this.repeats ? 1 : 0);
+        hash = 43 * hash + Objects.hashCode(this.a);
+        hash = 43 * hash + Objects.hashCode(this.b);
+        return hash;
+    }
+
+    @Override
+    public iColor getColor(float t) {
+        if (repeats) {
+            t = Math.abs(t) % 2.0f;
+            t = t > 1.0f ? 2.0f - t : t;
+        } else {
+            t = t < 0.0f ? 0.0f : (t > 1.0f ? 1.0f : t);
+        }
+        return a.interpolate(b, t);
+    }
+
+}

@@ -1,0 +1,131 @@
+/*
+    This file is part of CakeGame engine.
+
+    CakeGame engine is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    CakeGame engine is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with CakeGame engine.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.cake.game.test;
+
+import com.jogamp.opengl.JoglVersion;
+import java.awt.event.KeyEvent;
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.glu.GLU;
+import org.cake.game.*;
+import org.cake.game.input.GameKeyEvent;
+import org.cake.game.input.iGameKeyListener;
+import org.cake.game.io.ResourceManager;
+import org.cake.game.io.Settings;
+import org.cake.game.text.UnicodeFont;
+
+/**
+ *
+ * @author Aaron Cake
+ */
+public class GameWindowTest implements iGameCallback, iGameKeyListener {
+    
+    public static void main(String[] args) {
+        GameWindow game = new GameWindow(800, 600, true);
+        GameWindowTest callback = new GameWindowTest();
+        game.setGameCallback(callback);
+        game.setViewportMetrics(new OrthoFitViewportMetrics(800, 600));
+        game.getKeyboard().addListener(callback);
+        game.start();
+    }
+    
+    Image img;
+    
+    @Override
+    public boolean exitRequested(Game g, GL gl, GLU glu) {
+        Log.getDefault().debug("exitRequested");
+        return true;
+    }
+
+    @Override
+    public void exit(Game g, GL gl, GLU glu) {
+        Log.getDefault().debug("exit");
+    }
+
+    @Override
+    public void init(Game g, GL gl, GLU glu) {
+        Log.getDefault().debug("init");
+        
+        ResourceManager.getDefault().loadResourceMap(new Settings("resources/resources.ini"));
+        img = Image.get("images.smiley");
+        
+        Log.getDefault().info(JoglVersion.getInstance());
+    }
+
+    @Override
+    public void initGL(Game g, GL gl, GLU glu) {
+        Log.getDefault().debug("initGL");
+    }
+
+    @Override
+    public void render(Game g, GL gl, GLU glu) {
+        GL2 gl2 = gl.getGL2();
+        
+        gl2.glBegin(GL2.GL_QUADS);
+            Color.red.glBindColor(gl2);
+            gl2.glVertex2f(200, 200);
+            Color.green.glBindColor(gl2);
+            gl2.glVertex2f(400, 200);
+            Color.blue.glBindColor(gl2);
+            gl2.glVertex2f(400, 400);
+            Color.black.glBindColor(gl2);
+            gl2.glVertex2f(200, 400);
+        gl2.glEnd();
+        
+        Color.glClearColor(gl2);
+        
+        img.draw(gl2, 0, 0);
+        
+        // doesn't work yet
+        //font.drawString("Hello World", 200, 500);
+    }
+
+    @Override
+    public void finished() {
+        Log.getDefault().debug("finished");
+    }
+
+    @Override
+    public void keyTyped(Game g, GameKeyEvent e) {
+        
+    }
+
+    @Override
+    public void keyPressed(Game g, GameKeyEvent e) {
+        if (e.key == KeyEvent.VK_F1) {
+            g.setFullscreen(!g.isFullscreen());
+        } else if (e.key == KeyEvent.VK_ESCAPE) {
+            g.requestExit();
+        } else if (e.key == KeyEvent.VK_1) {
+            Log.getDefault().info("GameSize: (" + g.getWidth() + ", " + g.getHeight() + ")");
+        }
+    }
+
+    @Override
+    public void keyReleased(Game g, GameKeyEvent e) {
+        
+    }
+
+    @Override
+    public void keyToggled(Game g, GameKeyEvent e) {
+        
+    }
+    
+    
+    
+}

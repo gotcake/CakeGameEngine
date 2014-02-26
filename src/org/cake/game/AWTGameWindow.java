@@ -1,0 +1,279 @@
+/*
+    This file is part of CakeGame engine.
+
+    CakeGame engine is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    CakeGame engine is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with CakeGame engine.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.cake.game;
+
+import java.awt.Dimension;
+import java.awt.DisplayMode;
+import java.awt.Frame;
+import java.awt.Insets;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GLCapabilities;
+import javax.media.opengl.GLEventListener;
+import javax.media.opengl.GLProfile;
+import javax.media.opengl.awt.GLCanvas;
+import javax.swing.SwingUtilities;
+import org.cake.game.exception.GameException;
+import org.cake.game.input.GameKeyEvent;
+import org.cake.game.input.iGameKeyListener;
+import org.cake.game.input.iGameMouseListener;
+import org.cake.game.reflect.Reflect;
+
+/**
+ * An implementation of Game within a window.
+ * @author Aaron Cake
+ */
+public class AWTGameWindow extends Game {
+
+    public AWTGameWindow(int width, int height, boolean resizable, boolean undecorated) {
+
+        // make the frames
+        windowFrame = new Frame("CakeGame");
+        windowFrame.setResizable(resizable);
+        windowFrame.setUndecorated(undecorated);
+        fullscreenFrame = new Frame("CakeGame");
+        fullscreenFrame.setUndecorated(true);
+        windowFrame.addWindowListener(Reflect.createProxy(WindowListener.class, "windowClosing", this, "windowClosing"));
+        fullscreenFrame.addWindowListener(Reflect.createProxy(WindowListener.class, "windowClosing", this, "windowClosing"));
+        
+       
+
+        // create the canvas
+        glp = GLProfile.getDefault();
+        glCaps = new GLCapabilities(glp);
+        glCaps.setSampleBuffers(true);
+        glCaps.setNumSamples(Math.min(8, maxSamples));
+        canvas = new GLCanvas(glCaps);
+        getAnimator().add(canvas);
+
+
+        // init other shit
+        fullscreen = false;
+        targetWidth = width;
+        targetHeight = height;
+        inited = false;
+        modeChangeRequested = false;
+
+    }
+
+    private DisplayMode targetMode;
+    private int targetWidth, targetHeight;
+    private Frame windowFrame, fullscreenFrame;
+    private GLCanvas canvas;
+    private GLCapabilities glCaps;
+    private GLProfile glp;
+    private boolean fullscreen, inited, modeChangeRequested;
+
+    @Override
+    protected void readyDisplay() {
+        inited = true;
+        if (fullscreen) {
+            fullscreenFrame.add(canvas);
+            fullscreenFrame.setVisible(true);
+            Display.setFullscreenWindow(fullscreenFrame);
+            Display.setDisplayMode(targetMode);
+        } else {
+            windowFrame.add(canvas);
+            windowFrame.setVisible(true);
+            setDisplaySize(targetWidth, targetHeight);
+            windowFrame.setLocationRelativeTo(null);
+        }
+        canvas.requestFocus();
+    }
+
+    @Override
+    protected void unloadDisplay() {
+        if (fullscreen) {
+            Display.setFullscreenWindow(null);
+            fullscreenFrame.setVisible(false);
+            fullscreenFrame.remove(canvas);
+        } else {
+            windowFrame.setVisible(false);
+            windowFrame.remove(canvas);
+        }
+        fullscreenFrame.dispose();
+        windowFrame.dispose();
+    }
+
+    @Override
+    protected void addGLEventListener(GLEventListener gle) {
+        canvas.addGLEventListener(gle);
+    }
+
+    @Override
+    public void setFullscreen(boolean b) throws GameException {
+        setFullscreen(b, Display.getCurrentDisplayMode());
+    }
+
+    @Override
+    public void setFullscreen(boolean b, final DisplayMode dm) throws GameException {
+        if (!inited) {
+            fullscreen = b;
+            targetMode = dm;
+        } else if (!modeChangeRequested) {
+            modeChangeRequested = true;
+            if (b && !fullscreen) { // enter fullscreen
+                animator.pause();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        Log.getDefault().debug("Entering Fullscreen.");
+                        keyboard.purge();
+                        mouse.purge();
+                        windowFrame.setVisible(false);
+                        windowFrame.remove(canvas);
+                        fullscreenFrame.add(canvas);
+                        fullscreenFrame.setVisible(true);
+                        Display.setFullscreenWindow(fullscreenFrame);
+                        if (!dm.equals(Display.getCurrentDisplayMode()))
+                            Display.setDisplayMode(dm);
+                        modeChangeRequested = false;
+                        animator.resume();
+                        canvas.requestFocus();
+                    }
+                });
+            } else if (!b && fullscreen) { // Exit Fullscreen
+                animator.pause();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        Log.getDefault().debug("Exiting Fullscreen.");
+                        keyboard.purge();
+                        mouse.purge();
+                        if (!Display.isCurrentDisplayModeDefault())
+                            Display.setDisplayModeDefault();
+                        Display.setFullscreenWindow(null);
+                        fullscreenFrame.setVisible(false);
+                        fullscreenFrame.remove(canvas);
+                        windowFrame.add(canvas);
+                        windowFrame.setVisible(true);
+                        modeChangeRequested = false;
+                        animator.resume();
+                        canvas.requestFocus();
+                    }
+                });
+            } else if (b && !dm.equals(Display.getCurrentDisplayMode())) { // Change Display Mode
+                getAnimator().pause();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        Log.getDefault().debug("Switching Display Mode.");
+                        Display.setDisplayMode(dm);
+                        modeChangeRequested = false;
+                        getAnimator().resume();
+                    }
+                });
+            }
+        }
+        fullscreen = b;
+    }
+
+    @Override
+    public void setDisplaySize(Dimension d) {
+        setDisplaySize(d.width, d.height);
+    }
+
+    @Override
+    public void setDisplaySize(int width, int height) {
+        if (fullscreen) {
+            targetWidth = width;
+            targetHeight = height;
+        } else {
+            Insets i = windowFrame.getInsets();
+            windowFrame.setSize(width + i.left + i.right, height + i.top + i.bottom);
+        }
+    }
+
+    @Override
+    public Dimension getDisplaySize() {
+        return canvas.getSize();
+    }
+
+    @Override
+    public int getDisplayHeight() {
+        return canvas.getHeight();
+    }
+
+    @Override
+    public int getDisplayWidth() {
+        return canvas.getWidth();
+    }
+
+    @Override
+    public boolean isFullscreen() {
+        return fullscreen;
+    }
+
+    private void windowClosing(WindowEvent e) {
+        requestExit();
+    }
+
+    @Override
+    public GLProfile getProfile() {
+        return glp;
+    }
+
+    @Override
+    public void addListener(Object listener) {
+        super.addListener(listener);
+        if (listener instanceof MouseListener) {
+            canvas.addMouseListener((MouseListener)listener);
+        }
+        if (listener instanceof MouseMotionListener) {
+            canvas.addMouseMotionListener((MouseMotionListener)listener);
+        }
+        if (listener instanceof MouseWheelListener) {
+            canvas.addMouseWheelListener((MouseWheelListener)listener);
+        }
+        if (listener instanceof KeyListener) {
+            canvas.addKeyListener((KeyListener)listener);
+        }
+        if (listener instanceof iGameKeyListener) {
+            keyboard.addListener((iGameKeyListener)listener);
+        }
+        if (listener instanceof iGameMouseListener) {
+            mouse.addListener((iGameMouseListener)listener);
+        }
+    }
+
+    @Override
+    public void removeListener(Object listener) {
+        super.addListener(listener);
+        if (listener instanceof MouseListener) {
+            canvas.removeMouseListener((MouseListener)listener);
+        }
+        if (listener instanceof MouseMotionListener) {
+            canvas.removeMouseMotionListener((MouseMotionListener)listener);
+        }
+        if (listener instanceof MouseWheelListener) {
+            canvas.removeMouseWheelListener((MouseWheelListener)listener);
+        }
+        if (listener instanceof KeyListener) {
+            canvas.removeKeyListener((KeyListener)listener);
+        }
+        if (listener instanceof iGameKeyListener) {
+            keyboard.removeListener((iGameKeyListener)listener);
+        }
+        if (listener instanceof iGameMouseListener) {
+            mouse.removeListener((iGameMouseListener)listener);
+        }
+    }
+
+
+
+}

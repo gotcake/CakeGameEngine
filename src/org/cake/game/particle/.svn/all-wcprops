@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/particle
+END
+iParticle.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/particle/iParticle.java
+END
+iParticleEmitter.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/particle/iParticleEmitter.java
+END
+ImageParticleEmitter.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/particle/ImageParticleEmitter.java
+END
+ParticleSystem_Old.java
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/particle/ParticleSystem_Old.java
+END
+DynamicImageParticleEmitter.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/particle/DynamicImageParticleEmitter.java
+END
+iParticleFactory.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/particle/iParticleFactory.java
+END
+StaticParticleEmitter.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/particle/StaticParticleEmitter.java
+END
+ParticleEffect.java
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/particle/ParticleEffect.java
+END
+iParticleEmitter_Old.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/particle/iParticleEmitter_Old.java
+END
+AbstractParticleEmitter.java
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/particle/AbstractParticleEmitter.java
+END

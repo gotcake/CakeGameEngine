@@ -1,0 +1,46 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.test;
+
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.JFrame;
+import org.cake.game.BiColorGradient;
+import org.cake.game.Color;
+import org.cake.game.geom.Line2;
+import org.cake.game.io.objectxml.Base64Coder;
+import org.cake.game.io.objectxml.ObjectXML;
+import org.cake.game.io.objectxml.ObjectXMLNode;
+import org.cake.game.particle.ImageParticleEmitter;
+
+/**
+ *
+ * @author Aaron
+ */
+public class ObjectXMLTest {
+
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+
+        HashMap map = new HashMap();
+        map.put("Lmao", 1.0f);
+        map.put(12, "Lolz");
+        map.put('c', "pfft");
+
+        BiColorGradient grad = new BiColorGradient(Color.black, Color.red, true);
+
+        Line2 line = new Line2(1, 2, 3, 4);
+
+        ObjectXML.serializeToFile(map, "resources/map.xml");
+        ObjectXML.serializeToFile(grad, "resources/gradient.xml");
+        ObjectXML.serializeToFile(line, "resources/line.xml");
+
+        System.out.println(grad.equals(ObjectXML.unserializeFromFile("resources/gradient.xml")));
+
+
+
+    }
+
+}

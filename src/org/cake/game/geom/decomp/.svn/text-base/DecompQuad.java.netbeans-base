@@ -1,0 +1,30 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.geom.decomp;
+
+import javax.media.opengl.GL2;
+import org.cake.game.geom.Vector2;
+
+/**
+ * Represents a single decomposition quad.
+ * @author Aaron Cake
+ */
+public class DecompQuad extends DecompPolygon {
+
+    public DecompQuad(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4) {
+        super(p1, p2, p3, p4);
+    }
+
+    @Override
+    public Vector2 generateCenter() {
+        return pts.get(0).interpolateTo(pts.get(2), 0.5f);
+    }
+
+    @Override
+    public int getGLType() {
+        return GL2.GL_QUADS;
+    }
+
+}

@@ -1,0 +1,221 @@
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game
+END
+iImageSet.java
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/iImageSet.java
+END
+BiColorGradient.java
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/BiColorGradient.java
+END
+FitViewportMetrics.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/FitViewportMetrics.java
+END
+GameApplet.java
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/GameApplet.java
+END
+Graphics.java
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/Graphics.java
+END
+iDestroyable.java
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/iDestroyable.java
+END
+iDrawable.java
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/iDrawable.java
+END
+Sprite.java
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/Sprite.java
+END
+iGameResizeListener.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/iGameResizeListener.java
+END
+CenterOriginViewportMetrics.java
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/CenterOriginViewportMetrics.java
+END
+AWTGameWindow.java
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/AWTGameWindow.java
+END
+Range.java
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/Range.java
+END
+iColor.java
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/iColor.java
+END
+iGradient2.java
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/iGradient2.java
+END
+NativeGameWindow.java
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/NativeGameWindow.java
+END
+iGameRunnable.java
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/iGameRunnable.java
+END
+LinearGradient.java
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/LinearGradient.java
+END
+SwingGamePanel.java
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/SwingGamePanel.java
+END
+AWTGameCanvas.java
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/AWTGameCanvas.java
+END
+iInvalidable.java
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/iInvalidable.java
+END
+Log.java
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/9/trunk/CakeGame/src/org/cake/game/Log.java
+END
+ImageSheet.java
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/ImageSheet.java
+END
+Color.java
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/Color.java
+END
+iGameLifecycleListener.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/iGameLifecycleListener.java
+END
+Display.java
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/Display.java
+END
+Util.java
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/Util.java
+END
+GameAppletLoader.java
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/GameAppletLoader.java
+END
+DefaultViewportMetrics.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/DefaultViewportMetrics.java
+END
+Image.java
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/Image.java
+END
+iInvalidationListener.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/iInvalidationListener.java
+END
+MultiColorGradient.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/MultiColorGradient.java
+END
+StretchViewportMetrics.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/StretchViewportMetrics.java
+END
+iGradient1.java
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/iGradient1.java
+END
+iViewportMetrics.java
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/iViewportMetrics.java
+END
+iGameAdapter.java
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/14/trunk/CakeGame/src/org/cake/game/iGameAdapter.java
+END
+Game.java
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/16/trunk/CakeGame/src/org/cake/game/Game.java
+END

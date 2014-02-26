@@ -1,0 +1,45 @@
+K 26
+svn:wc:ra_dav:activity-url
+V 14
+/svn/!svn/act/
+K 25
+svn:wc:ra_dav:version-url
+V 31
+/svn/!svn/ver/16/trunk/CakeGame
+END
+license.txt
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/7/trunk/CakeGame/license.txt
+END
+design.rtf
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/8/trunk/CakeGame/design.rtf
+END
+applet.policy
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/16/trunk/CakeGame/applet.policy
+END
+build.xml
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/3/trunk/CakeGame/build.xml
+END
+manifest.mf
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/3/trunk/CakeGame/manifest.mf
+END
+license-template.txt
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/7/trunk/CakeGame/license-template.txt
+END

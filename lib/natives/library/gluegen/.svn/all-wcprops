@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/3/trunk/CakeGame/lib/natives/library/gluegen
+END
+gluegen-rt-natives-linux-amd64.jar
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/!svn/ver/3/trunk/CakeGame/lib/natives/library/gluegen/gluegen-rt-natives-linux-amd64.jar
+END
+gluegen-rt-natives-solaris-i586.jar
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/!svn/ver/3/trunk/CakeGame/lib/natives/library/gluegen/gluegen-rt-natives-solaris-i586.jar
+END
+gluegen-rt-natives-solaris-amd64.jar
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/!svn/ver/3/trunk/CakeGame/lib/natives/library/gluegen/gluegen-rt-natives-solaris-amd64.jar
+END
+gluegen-rt-natives-linux-i586.jar
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/!svn/ver/3/trunk/CakeGame/lib/natives/library/gluegen/gluegen-rt-natives-linux-i586.jar
+END
+gluegen-rt-natives-macosx-universal.jar
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/!svn/ver/3/trunk/CakeGame/lib/natives/library/gluegen/gluegen-rt-natives-macosx-universal.jar
+END
+gluegen-rt-natives-windows-i586.jar
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/!svn/ver/3/trunk/CakeGame/lib/natives/library/gluegen/gluegen-rt-natives-windows-i586.jar
+END
+gluegen-rt-natives-windows-amd64.jar
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/!svn/ver/3/trunk/CakeGame/lib/natives/library/gluegen/gluegen-rt-natives-windows-amd64.jar
+END

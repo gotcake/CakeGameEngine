@@ -1,0 +1,25 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.geom.decomp;
+
+import javax.media.opengl.GL2;
+import org.cake.game.geom.iContour;
+import org.cake.game.geom.iPointCallback;
+
+/**
+ * A special case of contour that is a partial decomposition of one or more
+ * contours and that it has both a CCW winding and is a simple convex shape.
+ * All implementing classes must ensure these two things.
+ * @author Aaron Cake
+ */
+public interface iDecompContour extends iContour {
+    
+    public int getGLType();
+    
+    public void glBind(GL2 gl);
+    
+    public void glBind(GL2 gl, iPointCallback pcb);
+    
+}

@@ -1,0 +1,11 @@
+; this is an INI file
+[section1]
+name = value and shit  
+lol = blah  
+[section2]
+    name.test        =       haha  
+lol         =       lmao ; this should still work
+; this should not haha = lol
+[__default__]
+debug[2]=nope
+haha[0].lol=lmao

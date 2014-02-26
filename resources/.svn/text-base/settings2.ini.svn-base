@@ -1,0 +1,10 @@
+; Mar 3, 2012 4:47:43 PM
+[section2]
+name.test=haha
+lol=lmao
+[section1]
+lol=blah
+name=value and shit
+[__default__]
+haha[0].lol=lmao
+debug[2]=nope

@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/3/trunk/CakeGame/lib/javadoc
+END
+js-javadoc.zip
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/16/trunk/CakeGame/lib/javadoc/js-javadoc.zip
+END
+jogl-javadoc.zip
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/3/trunk/CakeGame/lib/javadoc/jogl-javadoc.zip
+END
+gluegen-javadoc.zip
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/3/trunk/CakeGame/lib/javadoc/gluegen-javadoc.zip
+END
+jocl-javadoc.zip
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/3/trunk/CakeGame/lib/javadoc/jocl-javadoc.zip
+END
+dyn4j-javadoc.zip
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/3/trunk/CakeGame/lib/javadoc/dyn4j-javadoc.zip
+END
+joal-javadoc.zip
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/3/trunk/CakeGame/lib/javadoc/joal-javadoc.zip
+END
+jython-javadoc.zip
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/16/trunk/CakeGame/lib/javadoc/jython-javadoc.zip
+END

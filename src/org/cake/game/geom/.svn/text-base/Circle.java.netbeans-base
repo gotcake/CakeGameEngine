@@ -1,0 +1,288 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.geom;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import javax.media.opengl.GL2;
+import org.cake.game.Game;
+import org.cake.game.Graphics;
+import org.cake.game.collision.iAABB;
+import org.cake.game.collision.iBoundingCircle;
+
+/**
+ *
+ * @author Aaron
+ */
+public class Circle implements iConvex, iAABB, iBoundingCircle {
+
+    private static int DEFAULT_POINTS = 50;
+    public static int getDefaultPoints() {
+        return DEFAULT_POINTS;
+    }
+    public static void setDefaultPoints(int points) {
+        DEFAULT_POINTS = points;
+    }
+
+    private List<Vector2> points;
+    private Vector2 center;
+    private float radius;
+    private int zIndex;
+
+    public Circle(Vector2 pos, float radius) {
+        this(pos.x, pos.y, radius, DEFAULT_POINTS);
+    }
+
+    public Circle(Vector2 pos, float radius, int numPoints) {
+        this(pos.x, pos.y, radius, numPoints);
+    }
+
+    public Circle(float centerX, float centerY, float radius) {
+        this(centerX, centerY, radius, DEFAULT_POINTS);
+    }
+
+    public Circle(float centerX, float centerY, float radius, int numPoints) {
+        zIndex = 0;
+        center = new Vector2(centerX, centerY);
+        this.radius = radius;
+        points = new ArrayList<>(numPoints);
+        for (int i=0; i<numPoints; i++)
+            points.add(new Vector2());
+        setPoints();
+    }
+
+    @Override
+    public List<Vector2> getPoints() {
+        return points;
+    }
+
+    private void setPoints() {
+        int numPoints = points.size();
+        float dtheta = GeomUtil.PI2 / numPoints, theta = 0;
+        for (int i=0; i<numPoints; i++) {
+            points.get(i).set(
+                    (float)Math.cos(theta) * radius + center.x,
+                    (float)Math.sin(theta) * radius + center.y
+                   );
+            theta += dtheta;
+        }
+    }
+
+    @Override
+    public List<iConvex> getConvex() {
+        return Arrays.asList((iConvex)this);
+    }
+
+    @Override
+    public iAABB getAABB() {
+        return this;
+    }
+
+    @Override
+    public iBoundingCircle getBoundingCircle() {
+        return this;
+    }
+
+    @Override
+    public boolean containsPoint(Vector2 point) {
+        return point.distanceToSquared(center) <= (radius * radius);
+    }
+
+    @Override
+    public boolean intersects(iShape other) {
+        return GeomUtil.checkAABBs(this, other.getAABB()) &&
+                GeomUtil.checkBoundingCircles(this, other.getBoundingCircle()) &&
+                GeomUtil.intersects(this, other);
+    }
+
+    @Override
+    public void draw(GL2 gl) {
+        int numPoints = points.size();
+        gl.glBegin(GL2.GL_LINE_LOOP);
+        Vector2 pt;
+        for (int i=0; i<numPoints; i++) {
+            pt = points.get(i);
+            gl.glVertex2f(pt.x, pt.y);
+        }
+        gl.glEnd();
+    }
+
+    @Override
+    public void draw(GL2 gl, iPointCallback pcb) {
+        int numPoints = points.size();
+        gl.glBegin(GL2.GL_LINE_LOOP);
+        Vector2 pt;
+        for (int i=0; i<numPoints; i++) {
+            pt = points.get(i);
+            pcb.point(gl, pt);
+            gl.glVertex2f(pt.x, pt.y);
+        }
+        gl.glEnd();
+    }
+
+    /*@Override
+    public void fill(GL2 gl) {
+        int numPoints = points.size();
+        gl.glBegin(GL2.GL_TRIANGLE_FAN);
+        Vector2 pt;
+        gl.glVertex2f(center.x, center.y);
+        for (int i=0; i<numPoints; i++) {
+            pt = points.get(i);
+            gl.glVertex2f(pt.x, pt.y);
+        }
+        pt = points.get(0);
+        gl.glVertex2f(pt.x, pt.y);
+        gl.glEnd();
+    }*/
+
+
+    @Override
+    public void fill(GL2 gl) {
+        int numPoints = points.size();
+        gl.glBegin(GL2.GL_POLYGON);
+        Vector2 pt;
+        for (int i=0; i<numPoints; i++) {
+            pt = points.get(i);
+            gl.glVertex2f(pt.x, pt.y);
+        }
+        gl.glEnd();
+    }
+
+    @Override
+    public void fill(GL2 gl, iPointCallback pcb) {
+        int numPoints = points.size();
+        gl.glBegin(GL2.GL_POLYGON);
+        Vector2 pt;
+        for (int i=0; i<numPoints; i++) {
+            pt = points.get(i);
+            pcb.point(gl, pt);
+            gl.glVertex2f(pt.x, pt.y);
+        }
+        gl.glEnd();
+    }
+
+    /*@Override
+    public void fill(GL2 gl, iPointCallback pcb) {
+        int numPoints = points.size();
+        gl.glBegin(GL2.GL_TRIANGLE_FAN);
+        Vector2 pt;
+        pcb.point(gl, center);
+        gl.glVertex2f(center.x, center.y);
+        for (int i=0; i<numPoints; i++) {
+            pt = points.get(i);
+            pcb.point(gl, pt);
+            gl.glVertex2f(pt.x, pt.y);
+        }
+        pt = points.get(0);
+        pcb.point(gl, pt);
+        gl.glVertex2f(pt.x, pt.y);
+        gl.glEnd();
+    }*/
+
+    @Override
+    public void render(Game game, Graphics g) {
+        fill(g.getGL());
+    }
+
+    @Override
+    public void update(Game g, float delta) { }
+
+    @Override
+    public int getZIndex() {
+        return zIndex;
+    }
+
+    @Override
+    public void translate(float dx, float dy) {
+        center.add(dx, dy);
+        int numPoints = points.size();
+        for (int i=0; i<numPoints; i++) {
+            points.get(i).add(dx, dy);
+        }
+    }
+
+    @Override
+    public void translate(Vector2 dpos) {
+        center.add(dpos);
+        int numPoints = points.size();
+        for (int i=0; i<numPoints; i++) {
+            points.get(i).add(dpos);
+        }
+    }
+
+    @Override
+    public void rotate(float angle) { }
+
+    @Override
+    public void transform(SimpleTransform2 trans) {
+        translate(trans.getTranslationX(), trans.getTranslationY());
+    }
+
+    @Override
+    public float getMinY() {
+        return center.y - radius;
+    }
+
+    @Override
+    public float getMinX() {
+        return center.x - radius;
+    }
+
+    @Override
+    public float getMaxY() {
+        return center.y + radius;
+    }
+
+    @Override
+    public float getMaxX() {
+        return center.x + radius;
+    }
+
+    @Override
+    public float getRadius() {
+        return radius;
+    }
+
+    @Override
+    public float getRadiusSquared() {
+        return radius * radius;
+    }
+
+    @Override
+    public Vector2 getCenter() {
+        return center;
+    }
+
+    @Override
+    public void scale(float s) {
+        radius *= s;
+        setPoints();
+    }
+
+    @Override
+    public void setZIndex(int index) {
+        zIndex = index;
+    }
+
+    public void setCenter(Vector2 center) {
+        translate(center.subtract(this.center));
+    }
+
+    public void setCenter(float x, float y) {
+        translate(x - center.x, y - center.y);
+    }
+
+    public void setRadius(float radius) {
+        this.radius = radius;
+        setPoints();
+    }
+
+    @Override
+    public float getArea() {
+        return GeomUtil.PI * radius * radius;
+    }
+
+}

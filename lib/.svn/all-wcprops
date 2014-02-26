@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/!svn/ver/15/trunk/CakeGame/lib
+END
+gluegen-rt.jar
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/3/trunk/CakeGame/lib/gluegen-rt.jar
+END
+js.jar
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/16/trunk/CakeGame/lib/js.jar
+END
+jogl-all-natives-windows-amd64.jar
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/3/trunk/CakeGame/lib/jogl-all-natives-windows-amd64.jar
+END
+jogl.all.jar
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/3/trunk/CakeGame/lib/jogl.all.jar
+END
+jocl.jar
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/3/trunk/CakeGame/lib/jocl.jar
+END
+joal.jar
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/3/trunk/CakeGame/lib/joal.jar
+END
+dyn4j-v3.0.2.jar
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/3/trunk/CakeGame/lib/dyn4j-v3.0.2.jar
+END
+gluegen-rt-natives-windows-amd64.jar
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/3/trunk/CakeGame/lib/gluegen-rt-natives-windows-amd64.jar
+END
+jython.jar
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/!svn/ver/16/trunk/CakeGame/lib/jython.jar
+END

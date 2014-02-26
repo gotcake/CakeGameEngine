@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/16/trunk/CakeGame/lib/src
+END
+js-src.zip
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/16/trunk/CakeGame/lib/src/js-src.zip
+END
+jogl-src.zip
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/16/trunk/CakeGame/lib/src/jogl-src.zip
+END
+jython-src.zip
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/16/trunk/CakeGame/lib/src/jython-src.zip
+END

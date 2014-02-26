@@ -1,0 +1,99 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cake.game.collision;
+
+import java.util.List;
+import org.cake.game.Range;
+import org.cake.game.geom.*;
+
+/**
+ *
+ * @author Aaron
+ */
+public class CollisionUtil {
+
+    public static boolean hasSeparatingAxis(iShape a, iShape b) {
+        List<Vector2> la;
+        for (iConvex ca: a.getConvex()) {
+            la = ca.getPoints();
+            for (iConvex cb: b.getConvex()) {
+                if (!hasSeparatingAxis(la, cb.getPoints()))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean hasSeparatingAxis(List<Vector2> convexA, List<Vector2> convexB) {
+        int sizea = convexA.size();
+        int sizeb = convexB.size();
+        Vector2 last = convexA.get(sizea - 1), cur;
+        for (int i=0; i<sizea; i++) {
+            cur = convexA.get(i);
+            Vector2 axis = last.vectorTo(cur).leftOrthagonalLocal();
+            Range r1 = projectAxis(axis, convexA);
+            Range r2 = projectAxis(axis, convexB);
+            if (!r1.intersects(r2))
+                return true;
+            last = cur;
+        }
+        last = convexB.get(sizeb - 1);
+        for (int i=0; i<sizeb; i++) {
+            cur = convexB.get(i);
+            Vector2 axis = last.vectorTo(cur).leftOrthagonalLocal();
+            Range r1 = projectAxis(axis, convexA);
+            Range r2 = projectAxis(axis, convexB);
+            if (!r1.intersects(r2))
+                return true;
+            last = cur;
+        }
+        return false;
+    }
+
+    public static Range projectAxis(Vector2 axis, List<Vector2> convex) {
+        Range r = new Range(axis.dot(convex.get(0)));
+        int size = convex.size();
+        for (int i=1; i<size; i++) {
+            r.include(axis.dot(convex.get(i)));
+        }
+        return r;
+    }
+
+
+    public static ConvexCollisionResult getCollisionResult(List<Vector2> convexA, List<Vector2> convexB) {
+        return null;
+    }
+
+    public static boolean intersects(iConvex convexA, iConvex convexB) {
+        if (convexA instanceof Circle && convexB instanceof Circle) {
+            return GeomUtil.checkBoundingCircles(convexA.getBoundingCircle(), convexB.getBoundingCircle());
+        }
+        List<Vector2> a = convexA.getPoints();
+        List<Vector2> b = convexB.getPoints();
+        int sizea = a.size(), sizeb = b.size();
+        for (int i = 0; i<sizea; i++) {
+            if (convexB.containsPoint(a.get(i)))
+                return true;
+        }
+        for (int i = 0; i<sizeb; i++) {
+            if (convexA.containsPoint(b.get(i)))
+                return true;
+        }
+        Vector2 a1 = a.get(sizea - 1), a2, b1, b2;
+        for (int ia = 0; ia < sizea; ia++) {
+            a2 = a.get(ia);
+            b1 = b.get(sizeb - 1);
+            for (int ib = 0; ib < sizeb; ib++) {
+                b2 = b.get(ib);
+                if (Line2.intersects(a1.x, a1.y, a2.x, a2.y, b1.x, b1.y, b2.x, b2.y, false))
+                    return true;
+                b1 = b2;
+            }
+            a1 = a2;
+        }
+        return false;
+    }
+
+}
